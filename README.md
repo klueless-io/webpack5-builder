@@ -26,16 +26,23 @@ gem install webpack5-builder
 
 ### Main Story
 
-
+As a SPA Developer, I want to configure webpack5 enabled applications quickly, so I don&amp;#x27;t have to be a WebPack5 expert
 
 See all [stories](./STORIES.md)
-
 
 ## Usage
 
 See all [usage examples](./USAGE.md)
 
+### Basic Example
 
+#### Basic example
+
+Description for a basic example to be featured in the main README.MD file
+
+```ruby
+class SomeRuby; end
+```
 
 ## Development
 
@@ -45,7 +52,7 @@ Checkout the repo
 git clone klueless-io/webpack5-builder
 ```
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. 
+After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests.
 
 You can also run `bin/console` for an interactive prompt that will allow you to experiment.
 
