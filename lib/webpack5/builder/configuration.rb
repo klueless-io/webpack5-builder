@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module Webpack5
+  # Webpack files are built here
   module Builder
     # Configuration for webpack5/builder
     class << self
@@ -22,14 +23,16 @@ module Webpack5
 
     # Configuration class
     class Configuration
-      attr_accessor :npm_package_groups
+      attr_accessor :target_folder
+      attr_accessor :package_groups
 
       def initialize
-        @npm_package_groups = {}
+        @package_groups = {}
+        @target_folder = ''
       end
 
       def set_package_group(key, description, package_names)
-        npm_package_groups[key] = PackageGroup.new(key, description, package_names)
+        package_groups[key] = PackageGroup.new(key, description, package_names)
       end
 
       def default_package_groups
