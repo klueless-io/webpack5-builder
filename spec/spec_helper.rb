@@ -21,21 +21,21 @@ RSpec.configure do |config|
   # Usecase Documentor
   # ----------------------------------------------------------------------
 
-  KUsecases.configure(config)
+  # KUsecases.configure(config)
 
-  config.extend KUsecases
+  # config.extend KUsecases
 
-  config.before(:context, :usecases) do
-    puts '-' * 70
-    puts self.class
-    puts '-' * 70
-    @documentor = KUsecases::Documentor.new(self.class)
-  end
+  # config.before(:context, :usecases) do
+  #   puts '-' * 70
+  #   puts self.class
+  #   puts '-' * 70
+  #   @documentor = KUsecases::Documentor.new(self.class)
+  # end
 
-  config.after(:context, :usecases) do
-    @documentor.render
-    puts '-' * 70
-    puts self.class
-    puts '-' * 70
-  end
+  # config.after(:context, :usecases) do
+  #   @documentor.render
+  #   puts '-' * 70
+  #   puts self.class
+  #   puts '-' * 70
+  # end
 end

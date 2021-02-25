@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'webpack5/builder/version'
+require 'webpack5/builder/configuration'
 
 module Webpack5
   module Builder
