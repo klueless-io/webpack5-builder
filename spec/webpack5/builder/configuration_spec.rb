@@ -1,14 +1,39 @@
 # frozen_string_literal: true
 
+require 'tmpdir'
+
 RSpec.describe Webpack5::Builder::Configuration do
   let(:builder_module) { Webpack5::Builder }
+  let(:temp_folder) { Dir.mktmpdir('my-webpack-project') }
 
   after :each do
     builder_module.reset
   end
 
-  describe '.npm_package_groups' do
-    subject { builder_module.configuration.npm_package_groups }
+  describe '.target_folder' do
+    subject { builder_module.configuration.target_folder }
+
+    context 'when not configured' do
+      it { is_expected.to eq('') }
+    end
+
+    context 'when configured' do
+      before :each do
+        builder_module.configure do |config|
+          config.target_folder = temp_folder
+        end
+      end
+
+      it { is_expected.to eq(temp_folder) }
+    end
+  end
+
+  # after :each do
+  #   FileUtils.remove_entry temp_folder
+  # end
+
+  describe '.package_groups' do
+    subject { builder_module.configuration.package_groups }
 
     context 'when not configured' do
       it { is_expected.to eq({}) }

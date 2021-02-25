@@ -12,6 +12,8 @@
 /bin/runonce/
 webpack5_builder.yml
 
+.samples
+
 /_/
 /.bundle/
 /.history/
