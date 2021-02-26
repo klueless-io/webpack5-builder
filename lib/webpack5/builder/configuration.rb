@@ -13,7 +13,6 @@ module Webpack5
     end
 
     def self.reset
-      puts 'resetting'
       @configuration = Configuration.new
     end
 

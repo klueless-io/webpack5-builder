@@ -30,6 +30,7 @@ RSpec.describe Webpack5::Builder::PackageBuilder do
   describe '#output_path' do
     subject { builder.output_path }
     it { is_expected.not_to be_empty }
+    it { is_expected.not_to be_empty }
   end
 
   describe '#package_file' do
@@ -45,13 +46,15 @@ RSpec.describe Webpack5::Builder::PackageBuilder do
 
   describe '#init' do
     before :each do
+      puts "OUTPUT FOLDER: #{builder.output_path}"
+      puts "OUTPUT PACKAGE: #{builder.package_file}"
       builder.init
     end
 
     describe '#package_file' do
       subject { builder.package_file }
 
-      it { is_expected.to eq(File.join(folder, 'package.json')) }
+      fit { is_expected.to eq(File.join(folder, 'package.json')) }
     end
 
     describe '#package' do
