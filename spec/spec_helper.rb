@@ -3,6 +3,7 @@
 require 'pry'
 require 'bundler/setup'
 require 'webpack5/builder'
+require 'support/use_temp_folder'
 # require 'k_usecases'
 
 RSpec.configure do |config|

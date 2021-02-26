@@ -18,8 +18,11 @@ module Webpack5
 
       attr_accessor :target_folder
 
+      attr_accessor :current_dependency_type
+
       def initialize(config)
         self.target_folder = config.target_folder
+        self.current_dependency_type = :dev
       end
     end
   end
