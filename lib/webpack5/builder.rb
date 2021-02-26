@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'json'
 require 'webpack5/builder/version'
 require 'webpack5/builder/base_builder'
 require 'webpack5/builder/configuration'
