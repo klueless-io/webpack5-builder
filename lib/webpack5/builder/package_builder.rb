@@ -4,11 +4,14 @@ module Webpack5
   module Builder
     # Context is a data object holding onto state that is used when building webpack configuration.
     class PackageBuilder < BaseBuilder
+      # In memory representation of the package.json file that is being created
       attr_writer :package
 
-      # def initialize(context)
-      #   super(context)
-      # end
+      def initialize(context)
+        super(context)
+
+        @dependency_type = :development
+      end
 
       # -----------------------------------
       # Fluent Builder Methods
@@ -29,6 +32,18 @@ module Webpack5
       # Fluent Builder Methods
       # -----------------------------------
 
+      def production
+        @dependency_type = :production
+
+        self
+      end
+
+      def development
+        @dependency_type = :development
+
+        self
+      end
+
       # Init an NPN package
       #
       # run npm init -y
@@ -42,30 +57,45 @@ module Webpack5
       # Space separated list of packages
       def npm_install(packages, options: nil)
         options = parse_options(options)
-        command = "npm install #{options} #{packages}"
+        command = "npm install #{options.join(' ')} #{packages}"
         execute command
       end
-      alias npmi npm_install
+      alias npm_i npm_install
 
       def npm_add(packages, options: nil)
         options = parse_options(options, '--package-lock-only --no-package-lock')
-
-        command = "npm install #{options} #{packages}"
+        command = "npm install #{options.join(' ')} #{packages}"
         execute command
       end
-      alias npma npm_add
+      alias npm_a npm_add
+
+      # options_any?
+      def npm_add_group(key, options: nil)
+        group = get_group(key)
+
+        puts "Adding #{group.description}"
+
+        options = parse_options(options, '--package-lock-only --no-package-lock')
+        # if options_any?(options, '-D', '-P')
+        #   # prod_or_dev = context.dependency_type == :dev ? '-D' : '-P'
+        #   # options = parse_options(options, prod_or_dev)
+        # end
+
+        rc "npm i #{options} #{group.package_names.join(' ')}"
+
+        self
+      end
+      alias npm_ig npm_add_group
 
       # Add a group of NPN packages which get defined in configuration
       def npm_install_group(key, options: nil)
-        group = context.package_groups[key]
-
-        raise Webpack5::Builder::Error, "unknown package group: #{key}" if group.nil?
+        group = get_group(key)
 
         puts "Installing #{group.description}"
 
-        if options.nil?
-          options = context.current_dependency_type == :dev ? '-D' : '-P'
-        end
+        # if options.nil?
+        #   options = context.dependency_type == :dev ? '-D' : '-P'
+        # end
 
         rc "npm i #{options} #{group.package_names.join(' ')}"
 
@@ -101,7 +131,11 @@ module Webpack5
         required_options = [] if required_options.nil?
         required_options = required_options.split if required_options.is_a?(String)
 
-        (options | required_options).join(' ')
+        options | required_options
+      end
+
+      def options_any?(options, *any_options)
+        (options & any_options).any?
       end
 
       def vscode
@@ -110,12 +144,24 @@ module Webpack5
         rc "code #{package_file}"
       end
 
+      def dependency_option
+        @dependency_type == :development ? '-D' : '-P'
+      end
+
       private
 
       def execute(command)
         puts "RUN: #{command}"
         rc command
         load
+      end
+
+      def get_group(key)
+        group = context.package_groups[key]
+
+        raise Webpack5::Builder::Error, "unknown package group: #{key}" if group.nil?
+
+        group
       end
     end
   end

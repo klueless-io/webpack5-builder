@@ -21,6 +21,11 @@ RSpec.describe Webpack5::Builder::PackageBuilder do
     }
   end
 
+  # Tap & Yallist are two NPM packages with minimal dependencies
+  let(:yallist) { 'yallist' }
+  let(:tap) { 'tap' }
+  let(:packages) { yallist }
+
   before :each do
     builder_module.configure(&cfg)
   end
@@ -29,20 +34,33 @@ RSpec.describe Webpack5::Builder::PackageBuilder do
     builder_module.reset
   end
 
-  describe '#output_path' do
+  describe '.output_path' do
     subject { builder.output_path }
     it { is_expected.not_to be_empty }
   end
 
-  describe '#package_file' do
+  describe '.package_file' do
     subject { builder.package_file }
     it { is_expected.not_to be_empty }
   end
 
-  describe '#package' do
+  describe '.package' do
     subject { builder.package }
 
     it { expect(-> { subject }).to raise_error Webpack5::Builder::Error, 'package.json does not exist' }
+  end
+
+  # Driven of dependency_type, this will be -D or -P for NPM
+  describe '.dependency_option' do
+    subject { builder.dependency_option }
+
+    it { is_expected.to eq('-D') }
+
+    context 'change to production dependency' do
+      before { builder.production }
+
+      it { is_expected.to eq('-P') }
+    end
   end
 
   describe '#init' do
@@ -64,7 +82,7 @@ RSpec.describe Webpack5::Builder::PackageBuilder do
   end
 
   describe '#parse_options' do
-    subject { builder.parse_options(options) }
+    subject { builder.parse_options(options).join(' ') }
     let(:options) { nil }
 
     context 'when nil' do
@@ -87,7 +105,7 @@ RSpec.describe Webpack5::Builder::PackageBuilder do
     end
 
     context 'with required_options' do
-      subject { builder.parse_options(options, required_options) }
+      subject { builder.parse_options(options, required_options).join(' ') }
       let(:options) { '-a     -b' }
       let(:required_options) { nil }
 
@@ -113,11 +131,9 @@ RSpec.describe Webpack5::Builder::PackageBuilder do
   end
 
   describe '#npm_install - add+install dependency' do
-    # Yet Another Linked List is an NPM package with minimal dependencies
-    let(:packages) { 'yallist' }
     let(:node_target_folders) do
       [
-        File.join(builder.output_path, 'node_modules', 'yallist')
+        File.join(builder.output_path, 'node_modules', yallist)
       ]
     end
 
@@ -156,11 +172,9 @@ RSpec.describe Webpack5::Builder::PackageBuilder do
   end
 
   describe '#npm_add - add dependency (no install)' do
-    # Yet Another Linked List is an NPM package with minimal dependencies
-    let(:packages) { 'yallist' }
     let(:node_target_folders) do
       [
-        File.join(builder.output_path, 'node_modules', 'yallist')
+        File.join(builder.output_path, 'node_modules', yallist)
       ]
     end
 
@@ -169,7 +183,7 @@ RSpec.describe Webpack5::Builder::PackageBuilder do
       builder.npm_add(packages, options: options)
     end
 
-    fcontext 'when options are supplied manually' do
+    context 'when options are supplied manually' do
       context 'development' do
         subject { builder.package }
         let(:options) { '-D' }
