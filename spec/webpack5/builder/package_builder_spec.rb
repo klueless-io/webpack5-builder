@@ -131,18 +131,18 @@ RSpec.describe Webpack5::Builder::PackageBuilder do
   end
 
   describe '#npm_install - add+install dependency' do
-    let(:node_target_folders) do
-      [
-        File.join(builder.output_path, 'node_modules', yallist)
-      ]
-    end
-
-    before :each do
-      builder.init
-      builder.npm_install(packages, options: options)
-    end
-
     context 'when options are supplied manually' do
+      let(:node_target_folders) do
+        [
+          File.join(builder.output_path, 'node_modules', yallist)
+        ]
+      end
+
+      before :each do
+        builder.init
+        builder.npm_install(packages, options: options)
+      end
+
       context 'install dependency' do
         context 'development' do
           subject { builder.package }
