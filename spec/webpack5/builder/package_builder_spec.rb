@@ -1,5 +1,10 @@
 # frozen_string_literal: true
 
+# Warning: I am not using mocks and so there is a known test anti
+#          I am aware that this is an Anti Pattern in unit testing
+#          but I am sticking with this pattern for now as it saves
+#          me a lot of time in writing tests.
+# Future:  May want to remove this Anti Pattern
 RSpec.describe Webpack5::Builder::PackageBuilder do
   include_context :use_temp_folder
 
@@ -16,9 +21,6 @@ RSpec.describe Webpack5::Builder::PackageBuilder do
     }
   end
 
-  # Open package in VSCode
-  # builder.rc "code #{builder.package_file}"
-
   before :each do
     builder_module.configure(&cfg)
   end
@@ -29,7 +31,6 @@ RSpec.describe Webpack5::Builder::PackageBuilder do
 
   describe '#output_path' do
     subject { builder.output_path }
-    it { is_expected.not_to be_empty }
     it { is_expected.not_to be_empty }
   end
 
@@ -62,32 +63,135 @@ RSpec.describe Webpack5::Builder::PackageBuilder do
     end
   end
 
-  describe '#npm_install' do
+  describe '#parse_options' do
+    subject { builder.parse_options(options) }
+    let(:options) { nil }
+
+    context 'when nil' do
+      it { is_expected.to be_empty }
+    end
+
+    context 'when empty string' do
+      let(:options) { '' }
+      it { is_expected.to be_empty }
+    end
+
+    context 'when multiple options' do
+      let(:options) { '-a -B --c' }
+      it { is_expected.to eq('-a -B --c') }
+    end
+
+    context 'when multiple options wit extra spacing' do
+      let(:options) { '-abc     -xyz' }
+      it { is_expected.to eq('-abc -xyz') }
+    end
+
+    context 'with required_options' do
+      subject { builder.parse_options(options, required_options) }
+      let(:options) { '-a     -b' }
+      let(:required_options) { nil }
+
+      context 'when nil' do
+        it { is_expected.to eq('-a -b') }
+      end
+
+      context 'when empty string' do
+        let(:required_options) { '' }
+        it { is_expected.to eq('-a -b') }
+      end
+
+      context 'when add required option' do
+        let(:required_options) { '-req-option' }
+        it { is_expected.to eq('-a -b -req-option') }
+      end
+
+      context 'when add existing and required options' do
+        let(:required_options) { '-req1   -b  -req2 -a' }
+        it { is_expected.to eq('-a -b -req1 -req2') }
+      end
+    end
+  end
+
+  describe '#npm_install - add+install dependency' do
     # Yet Another Linked List is an NPM package with minimal dependencies
     let(:packages) { 'yallist' }
+    let(:node_target_folders) do
+      [
+        File.join(builder.output_path, 'node_modules', 'yallist')
+      ]
+    end
 
     before :each do
       builder.init
       builder.npm_install(packages, options: options)
     end
 
-    context 'create development dependency' do
-      subject { builder.package }
-      let(:options) { '-D' }
+    context 'when options are supplied manually' do
+      context 'install dependency' do
+        context 'development' do
+          subject { builder.package }
+          let(:options) { '-D' }
 
-      it do
-        is_expected.to have_key('devDependencies')
-          .and include('devDependencies' => { 'yallist' => a_value })
+          it do
+            expect(Dir.exist?(node_target_folders.first)).to be_truthy
+
+            is_expected.to have_key('devDependencies')
+              .and include('devDependencies' => { 'yallist' => a_value })
+          end
+        end
+
+        context 'production' do
+          subject { builder.package }
+          let(:options) { '-P' }
+
+          it do
+            expect(Dir.exist?(node_target_folders.first)).to be_truthy
+
+            is_expected.to have_key('dependencies')
+              .and include('dependencies' => { 'yallist' => a_value })
+          end
+        end
       end
     end
+  end
 
-    context 'create production dependency' do
-      subject { builder.package }
-      let(:options) { '-P' }
+  describe '#npm_add - add dependency (no install)' do
+    # Yet Another Linked List is an NPM package with minimal dependencies
+    let(:packages) { 'yallist' }
+    let(:node_target_folders) do
+      [
+        File.join(builder.output_path, 'node_modules', 'yallist')
+      ]
+    end
 
-      it do
-        is_expected.to have_key('dependencies')
-          .and include('dependencies' => { 'yallist' => a_value })
+    before :each do
+      builder.init
+      builder.npm_add(packages, options: options)
+    end
+
+    fcontext 'when options are supplied manually' do
+      context 'development' do
+        subject { builder.package }
+        let(:options) { '-D' }
+
+        it do
+          expect(Dir.exist?(node_target_folders.first)).to be_falsey
+
+          is_expected.to have_key('devDependencies')
+            .and include('devDependencies' => { 'yallist' => a_value })
+        end
+      end
+
+      context 'production' do
+        subject { builder.package }
+        let(:options) { '-P' }
+
+        it do
+          expect(Dir.exist?(node_target_folders.first)).to be_falsey
+
+          is_expected.to have_key('dependencies')
+            .and include('dependencies' => { 'yallist' => a_value })
+        end
       end
     end
   end
