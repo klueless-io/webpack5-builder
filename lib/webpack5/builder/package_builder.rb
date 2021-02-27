@@ -57,6 +57,7 @@ module Webpack5
       # Space separated list of packages
       def npm_install(packages, options: nil)
         options = parse_options(options)
+        options.push dependency_option unless options_any?(options, '-P', '-D')
         command = "npm install #{options.join(' ')} #{packages}"
         execute command
       end
@@ -64,6 +65,7 @@ module Webpack5
 
       def npm_add(packages, options: nil)
         options = parse_options(options, '--package-lock-only --no-package-lock')
+        options.push dependency_option unless options_any?(options, '-P', '-D')
         command = "npm install #{options.join(' ')} #{packages}"
         execute command
       end
