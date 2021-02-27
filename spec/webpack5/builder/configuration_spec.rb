@@ -25,6 +25,7 @@ RSpec.describe Webpack5::Builder::Configuration do
       let(:cfg) do
         lambda { |config|
           config.target_folder = temp_folder
+          config.default_package_groups
         }
       end
 
