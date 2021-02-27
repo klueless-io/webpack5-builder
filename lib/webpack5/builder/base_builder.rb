@@ -18,7 +18,6 @@ module Webpack5
         # Deep path create if needed
         FileUtils.mkdir_p(output_path)
 
-        # build_command = "asdf current ruby && cd #{output_path} && #{command}"
         build_command = "cd #{output_path} && #{command}"
 
         system(build_command)

@@ -41,12 +41,19 @@ module Webpack5
 
       # Space separated list of packages
       def npm_install(packages, options: nil)
+        options = parse_options(options)
         command = "npm install #{options} #{packages}"
-        puts "RUN: #{command}"
-        rc command
-        load
+        execute command
       end
       alias npmi npm_install
+
+      def npm_add(packages, options: nil)
+        options = parse_options(options, '--package-lock-only --no-package-lock')
+
+        command = "npm install #{options} #{packages}"
+        execute command
+      end
+      alias npma npm_add
 
       # Add a group of NPN packages which get defined in configuration
       def npm_install_group(key, options: nil)
@@ -86,10 +93,29 @@ module Webpack5
         self
       end
 
+      def parse_options(options = nil, required_options = nil)
+        options = [] if options.nil?
+        options = options.split if options.is_a?(String)
+        options.reject(&:empty?)
+
+        required_options = [] if required_options.nil?
+        required_options = required_options.split if required_options.is_a?(String)
+
+        (options | required_options).join(' ')
+      end
+
       def vscode
         puts "cd #{output_path}"
         puts package_file
         rc "code #{package_file}"
+      end
+
+      private
+
+      def execute(command)
+        puts "RUN: #{command}"
+        rc command
+        load
       end
     end
   end
