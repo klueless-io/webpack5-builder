@@ -7,6 +7,8 @@ require 'webpack5/builder/configuration'
 require 'webpack5/builder/context'
 require 'webpack5/builder/package_builder'
 
+require 'handlebars/helpers/template'
+
 module Webpack5
   module Builder
     # raise Webpack5::Builder::Error, 'Sample message'
