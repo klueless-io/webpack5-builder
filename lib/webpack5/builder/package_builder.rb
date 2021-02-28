@@ -48,6 +48,17 @@ module Webpack5
         self
       end
 
+      # Set a property value in the package
+      def set(key, value)
+        load
+
+        @package[key] = value
+
+        write
+
+        self
+      end
+
       # Init an NPN package
       #
       # run npm init -y
@@ -97,8 +108,19 @@ module Webpack5
       end
 
       # Load the existing package.json into memory
+      #
+      # ToDo: Would be useful to record the update timestamp on the
+      # package so that we only load if the in memory package is not
+      # the latest.
+      #
+      # The reason this can happen, is because external tools such are
+      # npm install are updating the package.json and after this happens
+      # we need to call load, but if there is any bug in the code we may
+      # for get to load, or we may load multiple times.
       def load
         raise Webpack5::Builder::Error, 'package.json does not exist' unless File.exist?(package_file)
+
+        puts 'loading...'
 
         content = File.read(package_file)
         @package = JSON.parse(content)
@@ -155,6 +177,16 @@ module Webpack5
         packages = packages.join(' ') if packages.is_a?(Array)
         command = "npm install #{options.join(' ')} #{packages}"
         execute command
+      end
+
+      def write
+        puts 'writing...'
+
+        content = JSON.pretty_generate(@package)
+
+        File.write(package_file, content)
+
+        self
       end
     end
   end

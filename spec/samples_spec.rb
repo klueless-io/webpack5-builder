@@ -28,8 +28,10 @@ RSpec.describe 'Samples' do
     it 'run' do
       builder
         .npm_init
+        .set('description', 'Transpiler SWC using Webpack 5')
         .development
         .npm_add_group('swc')
+        .vscode
       # puts builder.output_path
       # puts builder.package
 
