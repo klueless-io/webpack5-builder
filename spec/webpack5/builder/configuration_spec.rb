@@ -36,7 +36,7 @@ RSpec.describe Webpack5::Builder::Configuration do
     subject { builder_module.configuration.template_folder }
 
     context 'when not configured' do
-      it { is_expected.to eq(File.join(Dir.getwd, '.template')) }
+      it { is_expected.to eq(File.join(Dir.getwd, '.templates')) }
     end
 
     context 'when configured' do
