@@ -23,11 +23,13 @@ module Webpack5
     # Configuration class
     class Configuration
       attr_accessor :target_folder
+      attr_accessor :template_folder
       attr_accessor :package_groups
 
       def initialize
         @package_groups = {}
         @target_folder = ''
+        @template_folder = File.join(Dir.getwd, '.template')
       end
 
       def set_package_group(key, description, package_names)

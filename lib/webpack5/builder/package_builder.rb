@@ -80,15 +80,6 @@ module Webpack5
         self
       end
 
-      # This has to be moved into a different builder,
-      # it does not make sense on the package builder
-      def add_file(file, content = nil)
-        file = target_file(file)
-        File.write(file, content)
-
-        self
-      end
-
       # Init an NPN package
       #
       # run npm init -y
@@ -186,14 +177,6 @@ module Webpack5
       end
 
       private
-
-      def target_file(file)
-        target_file = File.expand_path(File.join(output_path, file))
-
-        FileUtils.mkdir_p(File.dirname(target_file))
-
-        target_file
-      end
 
       def execute(command)
         puts "RUN: #{command}"

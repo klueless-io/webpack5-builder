@@ -26,4 +26,17 @@ RSpec.describe Webpack5::Builder::BaseBuilder do
     subject { builder.output_path }
     it { is_expected.not_to be_empty }
   end
+
+  describe '#target_file' do
+    subject { builder.target_file(file) }
+
+    let(:file) { 'some_file.txt' }
+
+    it { is_expected.to eq(File.join(builder.output_path, file)) }
+  end
+
+  describe '#template_path' do
+    subject { builder.template_path }
+    it { is_expected.not_to be_empty }
+  end
 end

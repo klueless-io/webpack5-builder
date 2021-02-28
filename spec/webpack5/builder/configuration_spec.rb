@@ -25,7 +25,6 @@ RSpec.describe Webpack5::Builder::Configuration do
       let(:cfg) do
         lambda { |config|
           config.target_folder = temp_folder
-          config.default_package_groups
         }
       end
 
@@ -33,9 +32,23 @@ RSpec.describe Webpack5::Builder::Configuration do
     end
   end
 
-  # after :each do
-  #   FileUtils.remove_entry temp_folder
-  # end
+  describe '.template_folder' do
+    subject { builder_module.configuration.template_folder }
+
+    context 'when not configured' do
+      it { is_expected.to eq(File.join(Dir.getwd, '.template')) }
+    end
+
+    context 'when configured' do
+      let(:cfg) do
+        lambda { |config|
+          config.template_folder = '/some-folder'
+        }
+      end
+
+      it { is_expected.to eq('/some-folder') }
+    end
+  end
 
   describe '.package_groups' do
     subject { builder_module.configuration.package_groups }
