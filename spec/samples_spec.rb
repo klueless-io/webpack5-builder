@@ -26,25 +26,30 @@ RSpec.describe 'Samples' do
     let(:subfolder) { '01-transpiler-swc' }
 
     # Samples need to use rspec-usage
-    # it 'run' do
-    #   package_builder
-    #     .npm_init
-    #     .set('description', 'Transpiler SWC using Webpack 5')
-    #     .remove_script('test')
-    #     .add_script('transpile', 'npx swc src -d dist')
-    #     .add_script('run', 'node dist/index.js')
-    #     .add_file('src/index.js', <<~JAVASCRIPT
-    #       // test nullish coalescing - return right side when left side null or undefined
-    #       const x = null ?? "default string";
-    #       console.assert(x === "default string");
+    it 'run' do
+      # package_builder
+      #   .npm_init
+      #   .add_file('.gitignore', template_file: 'web-project/.gitignore' )
+      #   .vscode
+      package_builder
+        .npm_init
+        .set('description', 'Transpiler SWC using Webpack 5')
+        .remove_script('test')
+        .add_script('transpile', 'npx swc src -d dist')
+        .add_script('run', 'node dist/index.js')
+        .add_file('.gitignore', template_file: 'web-project/.gitignore')
+        .add_file('src/index.js', content: <<~JAVASCRIPT
+          // test nullish coalescing - return right side when left side null or undefined
+          const x = null ?? "default string";
+          console.assert(x === "default string");
 
-    #       const y = 0 ?? 42;
-    #       console.assert(y === 0);
-    #     JAVASCRIPT
-    #     )
-    #     .development
-    #     .npm_add_group('swc')
-    #     .vscode
-    # end
+          const y = 0 ?? 42;
+          console.assert(y === 0);
+        JAVASCRIPT
+        )
+        .development
+        .npm_add_group('swc')
+        .vscode
+    end
   end
 end
