@@ -21,9 +21,11 @@ RSpec.describe Webpack5::Builder::PackageBuilder do
     }
   end
 
-  # Tap & Yallist are two NPM packages with minimal dependencies
+  # Yallist & Boolbase are two NPM packages with minimal dependencies
   let(:yallist) { 'yallist' }
-  let(:tap) { 'tap' }
+  let(:node_target_yallist) { File.join(builder.output_path, 'node_modules', 'yallist') }
+  let(:boolbase) { 'boolbase' }
+  let(:node_target_boolbase) { File.join(builder.output_path, 'node_modules', 'boolbase') }
   let(:packages) { yallist }
 
   before :each do
@@ -131,25 +133,42 @@ RSpec.describe Webpack5::Builder::PackageBuilder do
   end
 
   describe '#npm_install - add+install dependency' do
-    context 'when options are supplied manually' do
-      let(:node_target_folders) do
-        [
-          File.join(builder.output_path, 'node_modules', yallist)
-        ]
+    context 'when options are configured via builder' do
+      subject { builder.package }
+
+      before :each do
+        builder.init
+               .production
+               .npm_install(boolbase)
+               .development
+               .npm_install(yallist)
       end
 
+      it do
+        expect(Dir.exist?(node_target_yallist)).to be_truthy
+        expect(Dir.exist?(node_target_boolbase)).to be_truthy
+
+        is_expected.to have_key('dependencies')
+          .and include('dependencies' => { 'boolbase' => a_value })
+          .and have_key('devDependencies')
+          .and include('devDependencies' => { 'yallist' => a_value })
+      end
+    end
+
+    context 'when options are supplied manually' do
       before :each do
         builder.init
         builder.npm_install(packages, options: options)
       end
 
       context 'install dependency' do
+        subject { builder.package }
+
         context 'development' do
-          subject { builder.package }
           let(:options) { '-D' }
 
           it do
-            expect(Dir.exist?(node_target_folders.first)).to be_truthy
+            expect(Dir.exist?(node_target_yallist)).to be_truthy
 
             is_expected.to have_key('devDependencies')
               .and include('devDependencies' => { 'yallist' => a_value })
@@ -157,11 +176,10 @@ RSpec.describe Webpack5::Builder::PackageBuilder do
         end
 
         context 'production' do
-          subject { builder.package }
           let(:options) { '-P' }
 
           it do
-            expect(Dir.exist?(node_target_folders.first)).to be_truthy
+            expect(Dir.exist?(node_target_yallist)).to be_truthy
 
             is_expected.to have_key('dependencies')
               .and include('dependencies' => { 'yallist' => a_value })
@@ -172,24 +190,19 @@ RSpec.describe Webpack5::Builder::PackageBuilder do
   end
 
   describe '#npm_add - add dependency (no install)' do
-    let(:node_target_folders) do
-      [
-        File.join(builder.output_path, 'node_modules', yallist)
-      ]
-    end
-
     before :each do
       builder.init
-      builder.npm_add(packages, options: options)
+             .npm_add(packages, options: options)
     end
 
     context 'when options are supplied manually' do
+      subject { builder.package }
+
       context 'development' do
-        subject { builder.package }
         let(:options) { '-D' }
 
         it do
-          expect(Dir.exist?(node_target_folders.first)).to be_falsey
+          expect(Dir.exist?(node_target_yallist)).to be_falsey
 
           is_expected.to have_key('devDependencies')
             .and include('devDependencies' => { 'yallist' => a_value })
@@ -197,11 +210,10 @@ RSpec.describe Webpack5::Builder::PackageBuilder do
       end
 
       context 'production' do
-        subject { builder.package }
         let(:options) { '-P' }
 
         it do
-          expect(Dir.exist?(node_target_folders.first)).to be_falsey
+          expect(Dir.exist?(node_target_yallist)).to be_falsey
 
           is_expected.to have_key('dependencies')
             .and include('dependencies' => { 'yallist' => a_value })
