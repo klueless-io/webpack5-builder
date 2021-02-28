@@ -18,12 +18,14 @@ module Webpack5
       # def_delegators :@config, :package_groups
 
       attr_accessor :target_folder
+      attr_accessor :template_folder
       attr_reader :package_groups
 
       def initialize(config)
         self.config = config
 
         @target_folder = config.target_folder
+        @template_folder = config.template_folder
         @package_groups = config.package_groups.clone
 
         yield(self) if block_given?
