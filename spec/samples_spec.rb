@@ -15,6 +15,11 @@ RSpec.describe 'Samples' do
     builder_module.reset
   end
 
+  fit 'runs a template' do
+    puts Handlebars::Helpers::Template.render('{{camel .}}', 'david was here')
+    puts Handlebars::Helpers::Template.render('{{dasherize .}}', 'david was here')
+  end
+
   describe 'create package for transpiler swc' do
     let(:cfg) do
       lambda { |config|
