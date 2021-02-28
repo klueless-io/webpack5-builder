@@ -108,7 +108,7 @@ RSpec.describe Webpack5::Builder::PackageBuilder do
 
     context 'remove script' do
       before :each do
-        builder.npm_init.script_remove('test')
+        builder.npm_init.remove_script('test')
       end
 
       it { is_expected.not_to have_key('test') }
@@ -116,7 +116,7 @@ RSpec.describe Webpack5::Builder::PackageBuilder do
 
     context 'add script' do
       before :each do
-        builder.npm_init.script_add('custom', 'do something')
+        builder.npm_init.add_script('custom', 'do something')
       end
 
       it do
