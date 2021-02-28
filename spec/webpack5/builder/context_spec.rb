@@ -38,7 +38,7 @@ RSpec.describe Webpack5::Builder::Context do
 
     describe '.template_folder' do
       subject { context.template_folder }
-      it { is_expected.to eq(File.join(Dir.getwd, '.template')) }
+      it { is_expected.to eq(File.join(Dir.getwd, '.templates')) }
 
       context 'change template_folder' do
         before { context.template_folder = '/different/folder' }
@@ -48,7 +48,7 @@ RSpec.describe Webpack5::Builder::Context do
         context 'config remains untouched' do
           subject { context.config.template_folder }
 
-          it { is_expected.to eq(File.join(Dir.getwd, '.template')) }
+          it { is_expected.to eq(File.join(Dir.getwd, '.templates')) }
         end
       end
     end
