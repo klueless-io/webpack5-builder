@@ -14,7 +14,7 @@ module Webpack5
       end
 
       # -----------------------------------
-      # Fluent Builder Methods
+      # Builder Attributes
       # -----------------------------------
 
       def package
@@ -26,6 +26,10 @@ module Webpack5
 
       def package_file
         @package_file ||= File.join(output_path, 'package.json')
+      end
+
+      def dependency_option
+        @dependency_type == :development ? '-D' : '-P'
       end
 
       # -----------------------------------
@@ -47,8 +51,9 @@ module Webpack5
       # Init an NPN package
       #
       # run npm init -y
-      def init
+      def npm_init
         rc 'npm init -y'
+
         load
 
         self
@@ -56,38 +61,29 @@ module Webpack5
 
       # Space separated list of packages
       def npm_install(packages, options: nil)
-        options = parse_options(options)
-        options.push dependency_option unless options_any?(options, '-P', '-D')
-        command = "npm install #{options.join(' ')} #{packages}"
-        execute command
+        npm_add_or_install(packages, parse_options(options))
+
+        self
       end
       alias npm_i npm_install
 
       def npm_add(packages, options: nil)
-        options = parse_options(options, '--package-lock-only --no-package-lock')
-        options.push dependency_option unless options_any?(options, '-P', '-D')
-        command = "npm install #{options.join(' ')} #{packages}"
-        execute command
+        npm_add_or_install(packages, parse_options(options, '--package-lock-only --no-package-lock'))
+
+        self
       end
       alias npm_a npm_add
 
-      # options_any?
       def npm_add_group(key, options: nil)
         group = get_group(key)
 
         puts "Adding #{group.description}"
 
-        options = parse_options(options, '--package-lock-only --no-package-lock')
-        # if options_any?(options, '-D', '-P')
-        #   # prod_or_dev = context.dependency_type == :dev ? '-D' : '-P'
-        #   # options = parse_options(options, prod_or_dev)
-        # end
-
-        rc "npm i #{options} #{group.package_names.join(' ')}"
+        npm_add(group.package_names, options: options)
 
         self
       end
-      alias npm_ig npm_add_group
+      alias npm_ag npm_add_group
 
       # Add a group of NPN packages which get defined in configuration
       def npm_install_group(key, options: nil)
@@ -95,27 +91,12 @@ module Webpack5
 
         puts "Installing #{group.description}"
 
-        # if options.nil?
-        #   options = context.dependency_type == :dev ? '-D' : '-P'
-        # end
-
-        rc "npm i #{options} #{group.package_names.join(' ')}"
+        npm_install(group.package_names, options: options)
 
         self
       end
 
-      # # --no-optional
-      # def npm_install_group(_key)
-      #   # npm i -D webpack webpack-cli webpack-dev-server
-
-      #   self
-      # end
-
-      # it 'has a standard error' do
-      #   expect { raise Webpack5::Builder::Error, 'some message' }
-      #     .to raise_error('some message')
-      # end
-
+      # Load the existing package.json into memory
       def load
         raise Webpack5::Builder::Error, 'package.json does not exist' unless File.exist?(package_file)
 
@@ -124,6 +105,10 @@ module Webpack5
 
         self
       end
+
+      # -----------------------------------
+      # Helpers
+      # -----------------------------------
 
       def parse_options(options = nil, required_options = nil)
         options = [] if options.nil?
@@ -140,14 +125,12 @@ module Webpack5
         (options & any_options).any?
       end
 
+      # Debug method to open the package file in vscode
+      # ToDo: Maybe remove
       def vscode
         puts "cd #{output_path}"
         puts package_file
         rc "code #{package_file}"
-      end
-
-      def dependency_option
-        @dependency_type == :development ? '-D' : '-P'
       end
 
       private
@@ -164,6 +147,14 @@ module Webpack5
         raise Webpack5::Builder::Error, "unknown package group: #{key}" if group.nil?
 
         group
+      end
+
+      def npm_add_or_install(packages, options)
+        # if -P or -D is not in the options then use the current builder dependency option
+        options.push dependency_option unless options_any?(options, '-P', '-D')
+        packages = packages.join(' ') if packages.is_a?(Array)
+        command = "npm install #{options.join(' ')} #{packages}"
+        execute command
       end
     end
   end
