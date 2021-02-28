@@ -1,6 +1,5 @@
 /bin/
 /bin/runonce/
-transpilerswc.yml
 
 node_modules
 dist

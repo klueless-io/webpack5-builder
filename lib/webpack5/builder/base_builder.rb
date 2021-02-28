@@ -22,10 +22,20 @@ module Webpack5
         @template_path ||= File.expand_path(context.template_folder)
       end
 
-      def add_file(file, content = nil)
+      def template_file(file)
+        File.expand_path(File.join(template_path, file))
+      end
+
+      def add_file(file, content: nil, template_file: nil)
         file = target_file(file)
 
         FileUtils.mkdir_p(File.dirname(file))
+
+        content = if !content.nil?
+                    content
+                  elsif !template_file.nil?
+                    File.read(template_file(template_file))
+                  end
 
         File.write(file, content)
 
