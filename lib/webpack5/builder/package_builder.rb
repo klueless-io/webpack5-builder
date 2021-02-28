@@ -21,6 +21,7 @@ module Webpack5
         return @package if defined? @package
 
         load
+
         @package
       end
 
@@ -53,6 +54,26 @@ module Webpack5
         load
 
         @package[key] = value
+
+        write
+
+        self
+      end
+
+      def script_remove(key)
+        load
+
+        @package['scripts']&.delete(key)
+
+        write
+
+        self
+      end
+
+      def script_add(key, value)
+        load
+
+        @package['scripts'][key] = value
 
         write
 
