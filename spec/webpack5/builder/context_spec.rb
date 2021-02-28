@@ -36,6 +36,23 @@ RSpec.describe Webpack5::Builder::Context do
       end
     end
 
+    describe '.template_folder' do
+      subject { context.template_folder }
+      it { is_expected.to eq(File.join(Dir.getwd, '.template')) }
+
+      context 'change template_folder' do
+        before { context.template_folder = '/different/folder' }
+
+        it { is_expected.to eq('/different/folder') }
+
+        context 'config remains untouched' do
+          subject { context.config.template_folder }
+
+          it { is_expected.to eq(File.join(Dir.getwd, '.template')) }
+        end
+      end
+    end
+
     describe '.package_groups' do
       subject { context.package_groups }
       it { expect(subject.keys).to have_attributes(count: 4).and include('webpack', 'swc', 'babel', 'typescript') }

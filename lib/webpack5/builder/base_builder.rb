@@ -14,6 +14,24 @@ module Webpack5
         @output_path ||= File.expand_path(context.target_folder)
       end
 
+      def target_file(file)
+        File.expand_path(File.join(output_path, file))
+      end
+
+      def template_path
+        @template_path ||= File.expand_path(context.template_folder)
+      end
+
+      def add_file(file, content = nil)
+        file = target_file(file)
+
+        FileUtils.mkdir_p(File.dirname(file))
+
+        File.write(file, content)
+
+        self
+      end
+
       def run_command(command)
         # Deep path create if needed
         FileUtils.mkdir_p(output_path)
