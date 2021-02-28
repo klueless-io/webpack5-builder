@@ -83,6 +83,50 @@ RSpec.describe Webpack5::Builder::PackageBuilder do
     end
   end
 
+  context 'set custom package property' do
+    subject { builder.package }
+
+    before :each do
+      builder
+        .npm_init
+        .set('description', 'some description')
+    end
+
+    it { is_expected.to include('description' => 'some description') }
+  end
+
+  context 'working with scripts' do
+    subject { builder.package['scripts'] }
+
+    context 'has default script' do
+      before :each do
+        builder.npm_init
+      end
+
+      it { is_expected.to have_key('test') }
+    end
+
+    context 'remove script' do
+      before :each do
+        builder.npm_init.script_remove('test')
+      end
+
+      it { is_expected.not_to have_key('test') }
+    end
+
+    context 'add script' do
+      before :each do
+        builder.npm_init.script_add('custom', 'do something')
+      end
+
+      it do
+        is_expected
+          .to  have_key('custom')
+          .and include('custom' => a_value)
+      end
+    end
+  end
+
   describe '#parse_options' do
     subject { builder.parse_options(options).join(' ') }
     let(:options) { nil }
