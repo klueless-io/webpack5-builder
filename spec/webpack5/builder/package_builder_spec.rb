@@ -26,7 +26,7 @@ RSpec.describe Webpack5::Builder::PackageBuilder do
   let(:node_target_yallist) { File.join(builder.output_path, 'node_modules', 'yallist') }
   let(:boolbase) { 'boolbase' }
   let(:node_target_boolbase) { File.join(builder.output_path, 'node_modules', 'boolbase') }
-  let(:packages) { yallist }
+  let(:multiple_packages) { [yallist, boolbase] }
 
   before :each do
     builder_module.configure(&cfg)
@@ -65,9 +65,9 @@ RSpec.describe Webpack5::Builder::PackageBuilder do
     end
   end
 
-  describe '#init' do
+  describe '#npm_init' do
     before :each do
-      builder.init
+      builder.npm_init
     end
 
     describe '#package_file' do
@@ -108,6 +108,7 @@ RSpec.describe Webpack5::Builder::PackageBuilder do
 
     context 'with required_options' do
       subject { builder.parse_options(options, required_options).join(' ') }
+
       let(:options) { '-a     -b' }
       let(:required_options) { nil }
 
@@ -132,12 +133,12 @@ RSpec.describe Webpack5::Builder::PackageBuilder do
     end
   end
 
-  describe '#npm_install - add+install dependency' do
+  describe '#npm_install' do
     context 'when options are configured via builder' do
       subject { builder.package }
 
       before :each do
-        builder.init
+        builder.npm_init
                .production
                .npm_install(boolbase)
                .development
@@ -148,22 +149,44 @@ RSpec.describe Webpack5::Builder::PackageBuilder do
         expect(Dir.exist?(node_target_yallist)).to be_truthy
         expect(Dir.exist?(node_target_boolbase)).to be_truthy
 
-        is_expected.to have_key('dependencies')
+        is_expected
+          .to  have_key('dependencies')
           .and include('dependencies' => { 'boolbase' => a_value })
           .and have_key('devDependencies')
           .and include('devDependencies' => { 'yallist' => a_value })
       end
     end
 
-    context 'when options are supplied manually' do
+    context 'when two packages are supplied manually' do
+      subject { builder.package }
       before :each do
-        builder.init
-        builder.npm_install(packages, options: options)
+        builder.npm_init
+               .npm_install(multiple_packages, options: options)
+      end
+
+      context 'development' do
+        let(:options) { '-D' }
+
+        it do
+          expect(Dir.exist?(node_target_yallist)).to be_truthy
+          expect(Dir.exist?(node_target_boolbase)).to be_truthy
+
+          is_expected
+            .to  have_key('devDependencies')
+            .and include('devDependencies' => { 'yallist' => a_value, 'boolbase' => a_value })
+        end
+      end
+    end
+
+    context 'when options are supplied manually' do
+      subject { builder.package }
+
+      before :each do
+        builder.npm_init
+               .npm_install(yallist, options: options)
       end
 
       context 'install dependency' do
-        subject { builder.package }
-
         context 'development' do
           let(:options) { '-D' }
 
@@ -189,14 +212,36 @@ RSpec.describe Webpack5::Builder::PackageBuilder do
     end
   end
 
-  describe '#npm_add - add dependency (no install)' do
-    before :each do
-      builder.init
-             .npm_add(packages, options: options)
+  describe '#npm_add' do
+    # adds dependency, but does not install
+    subject { builder.package }
+
+    context 'when options are configured via builder' do
+      before :each do
+        builder.npm_init
+               .production
+               .npm_add(boolbase)
+               .development
+               .npm_add(yallist)
+      end
+
+      it do
+        expect(Dir.exist?(node_target_yallist)).to be_falsey
+        expect(Dir.exist?(node_target_boolbase)).to be_falsey
+
+        is_expected
+          .to  have_key('dependencies')
+          .and include('dependencies' => { 'boolbase' => a_value })
+          .and have_key('devDependencies')
+          .and include('devDependencies' => { 'yallist' => a_value })
+      end
     end
 
     context 'when options are supplied manually' do
-      subject { builder.package }
+      before :each do
+        builder.npm_init
+               .npm_add(yallist, options: options)
+      end
 
       context 'development' do
         let(:options) { '-D' }
@@ -217,6 +262,105 @@ RSpec.describe Webpack5::Builder::PackageBuilder do
 
           is_expected.to have_key('dependencies')
             .and include('dependencies' => { 'yallist' => a_value })
+        end
+      end
+    end
+  end
+
+  describe '#npm_add_group' do
+    # adds dependency, but does not install
+    subject { builder.package }
+
+    let(:cfg) do
+      lambda { |config|
+        config.target_folder = folder
+        config.default_package_groups
+        config.set_package_group('xmen', 'Sample Packages', multiple_packages)
+      }
+    end
+
+    context 'when options are configured via builder' do
+      before :each do
+        builder.npm_init
+               .production
+               .npm_add_group('xmen')
+      end
+
+      it do
+        expect(Dir.exist?(node_target_yallist)).to be_falsey
+        expect(Dir.exist?(node_target_boolbase)).to be_falsey
+
+        is_expected
+          .to  have_key('dependencies')
+          .and include('dependencies' => { 'boolbase' => a_value, 'yallist' => a_value })
+      end
+    end
+
+    context 'when options are supplied manually' do
+      before :each do
+        builder.npm_init
+               .npm_add_group('xmen', options: options)
+      end
+
+      context 'development' do
+        let(:options) { '-D' }
+
+        it do
+          expect(Dir.exist?(node_target_yallist)).to be_falsey
+          expect(Dir.exist?(node_target_yallist)).to be_falsey
+
+          is_expected
+            .to have_key('devDependencies')
+            .and include('devDependencies' => { 'yallist' => a_value, 'boolbase' => a_value })
+        end
+      end
+    end
+  end
+
+  describe '#npm_install_group' do
+    subject { builder.package }
+
+    let(:cfg) do
+      lambda { |config|
+        config.target_folder = folder
+        config.default_package_groups
+        config.set_package_group('xmen', 'Sample Packages', multiple_packages)
+      }
+    end
+
+    context 'when options are configured via builder' do
+      before :each do
+        builder.npm_init
+               .production
+               .npm_install_group('xmen')
+      end
+
+      it do
+        expect(Dir.exist?(node_target_yallist)).to be_truthy
+        expect(Dir.exist?(node_target_boolbase)).to be_truthy
+
+        is_expected
+          .to  have_key('dependencies')
+          .and include('dependencies' => { 'boolbase' => a_value, 'yallist' => a_value })
+      end
+    end
+
+    context 'when options are supplied manually' do
+      before :each do
+        builder.npm_init
+               .npm_install_group('xmen', options: options)
+      end
+
+      context 'development' do
+        let(:options) { '-D' }
+
+        it do
+          expect(Dir.exist?(node_target_yallist)).to be_truthy
+          expect(Dir.exist?(node_target_yallist)).to be_truthy
+
+          is_expected
+            .to have_key('devDependencies')
+            .and include('devDependencies' => { 'yallist' => a_value, 'boolbase' => a_value })
         end
       end
     end
