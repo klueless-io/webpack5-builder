@@ -29,7 +29,7 @@ module Webpack5
       def initialize
         @package_groups = {}
         @target_folder = ''
-        @template_folder = File.join(Dir.getwd, '.template')
+        @template_folder = File.join(Dir.getwd, '.templates')
       end
 
       def set_package_group(key, description, package_names)

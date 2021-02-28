@@ -15,24 +15,25 @@ The package builder is used exclusively for building the package.json
 This builder will setup a package.json file with support files for transpiling javascript using the SWC transpiler
 
 ```ruby
-  package_builder
-    .npm_init
-    .set('description', 'Transpiler SWC using Webpack 5')
-    .remove_script('test')
-    .add_script('transpile', 'npx swc src -d dist')
-    .add_script('run', 'node dist/index.js')
-    .add_file('src/index.js', <<~JAVASCRIPT
-      // test nullish coalescing - return right side when left side null or undefined
-      const x = null ?? "default string";
-      console.assert(x === "default string");
+package_builder
+  .npm_init
+  .set('description', 'Transpiler SWC using Webpack 5')
+  .remove_script('test')
+  .add_script('transpile', 'npx swc src -d dist')
+  .add_script('run', 'node dist/index.js')
+  .add_file('.gitignore', template_file: 'web-project/.gitignore' )
+  .add_file('src/index.js', content: <<~JAVASCRIPT
+    // test nullish coalescing - return right side when left side null or undefined
+    const x = null ?? "default string";
+    console.assert(x === "default string");
 
-      const y = 0 ?? 42;
-      console.assert(y === 0);
-    JAVASCRIPT
-    )
-    .development
-      .npm_install_group('swc')
-    .vscode
+    const y = 0 ?? 42;
+    console.assert(y === 0);
+  JAVASCRIPT
+  )
+  .development
+  .npm_add_group('swc')
+  .vscode
 ```
 
 #### Generated package.json
