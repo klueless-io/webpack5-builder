@@ -60,7 +60,7 @@ RSpec.describe Webpack5::Builder::WebpackBuilder do
   #
   #
 
-  fdescribe '.output_path' do
+  describe '.output_path' do
     subject { builder.output_path }
     it { is_expected.not_to be_empty }
     it { puts subject }
@@ -78,7 +78,26 @@ RSpec.describe Webpack5::Builder::WebpackBuilder do
 
   describe '.webpack_rc' do
     subject { builder.webpack_rc }
-    it { is_expected.to be_empty }
+
+    it { expect(-> { subject }).to raise_error Webpack5::Builder::Error, '.webpack-rc.json does not exist' }
+  end
+
+  describe '#webpack_init' do
+    before :each do
+      builder.webpack_init
+    end
+
+    describe '#webpack_rc_file' do
+      subject { builder.webpack_rc_file }
+
+      it { is_expected.to eq(File.join(folder, '.webpack-rc.json')) }
+    end
+
+    describe '.webpack_rc' do
+      subject { builder.webpack_rc }
+
+      # it { is_expected.to be_empty }
+    end
   end
 
   # fit { puts subject }

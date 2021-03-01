@@ -45,6 +45,15 @@ module Webpack5
       # Fluent Builder Methods
       # -----------------------------------
 
+      def webpack_init
+        unless File.exist?(webpack_rc_file)
+          @webpack_rc = {}
+          write_webpack_rc
+        end
+
+        self
+      end
+
       # # Set a property value in the webpack_config
       # def set(key, value)
       #   load
@@ -66,18 +75,21 @@ module Webpack5
         puts "cd #{output_path}"
         puts webpack_rc_file
         rc "code #{webpack_rc_file}"
+
+        self
+      end
+
+      def pause(seconds = 1)
+        sleep(seconds)
+
+        self
       end
 
       private
 
       # Load the existing .webpack-rc.json into memory
       def load_webpack_rc
-        unless File.exist?(webpack_rc_file)
-          @webpack_rc = {}
-          write_webpack_rc
-        end
-
-        puts 'loading...'
+        raise Webpack5::Builder::Error, '.webpack-rc.json does not exist' unless File.exist?(webpack_rc_file)
 
         content = File.read(webpack_rc_file)
         @webpack_rc = JSON.parse(content)
@@ -86,8 +98,6 @@ module Webpack5
       end
 
       def write_webpack_rc
-        puts 'writing...'
-
         content = JSON.pretty_generate(@webpack_rc)
 
         FileUtils.mkdir_p(File.dirname(webpack_rc_file))
