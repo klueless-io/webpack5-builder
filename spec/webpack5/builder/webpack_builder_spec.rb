@@ -94,11 +94,11 @@ RSpec.describe Webpack5::Builder::WebpackBuilder do
     end
 
     describe '.webpack_rc' do
-      subject { builder.webpack_rc }
+      subject { builder.webpack_rc.root_scope.require_webpack }
 
-      it { is_expected.to be_empty }
+      it { is_expected.to eq(false) }
     end
-    fit { puts JSON.pretty_generate(builder.webpack_rc) }
+    fit { puts JSON.pretty_generate(builder.webpack_rc.as_json) }
   end
 
   # fit {

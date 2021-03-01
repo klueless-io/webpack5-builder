@@ -5,8 +5,11 @@ require 'webpack5/builder/version'
 require 'webpack5/builder/base_builder'
 require 'webpack5/builder/configuration'
 require 'webpack5/builder/context'
+require 'webpack5/builder/data_helper'
 require 'webpack5/builder/package_builder'
 require 'webpack5/builder/webpack_builder'
+require 'webpack5/builder/webpack_json_factory'
+require 'webpack5/builder/json_data'
 
 require 'handlebars/helpers/template'
 
