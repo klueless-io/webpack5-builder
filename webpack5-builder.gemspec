@@ -39,4 +39,5 @@ Gem::Specification.new do |spec|
   # spec.extensions    = ['ext/webpack5_builder/extconf.rb']
 
   spec.add_dependency 'handlebars-helpers'
+  # spec.add_dependency 'active_model_serializers'
 end

@@ -24,7 +24,16 @@ RSpec.describe 'Samples' do
       }
     end
 
-    let(:subfolder) { '01-transpiler-swc' }
+    context 'default entry' do
+      let(:subfolder) { '01-a-default-entry' }
+
+      it {
+        # webpack_builder
+        #   .webpack_init
+        #   .add_file('webpack.config.js', template_file: 'webpack.config.js.txt', **webpack_builder.webpack_rc.as_json)
+        # .vscode
+      }
+    end
 
     # Samples need to use rspec-usage
     # it 'run' do
@@ -66,9 +75,9 @@ RSpec.describe 'Samples' do
 
     # Samples need to use rspec-usage
     it 'run' do
-      webpack_builder
-        .webpack_init
-        .vscode
+      # webpack_builder
+      #   .webpack_init
+      #   .vscode
       # .add_file('.gitignore', template_file: 'web-project/.gitignore')
       #   package_builder
       #     .npm_init
