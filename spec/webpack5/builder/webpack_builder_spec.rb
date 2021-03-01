@@ -96,11 +96,11 @@ RSpec.describe Webpack5::Builder::WebpackBuilder do
     describe '.webpack_rc' do
       subject { builder.webpack_rc }
 
-      # it { is_expected.to be_empty }
+      it { is_expected.to be_empty }
     end
+    fit { puts JSON.pretty_generate(builder.webpack_rc) }
   end
 
-  # fit { puts subject }
   # fit {
   #   subject
   #   builder.vscode
