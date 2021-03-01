@@ -27,10 +27,10 @@ RSpec.describe 'Samples' do
 
     # Samples need to use rspec-usage
     it 'run' do
-      package_builder
-        .npm_init
-        .add_file('.gitignore', content_file: 'web-project/.gitignore')
-        .vscode
+      # package_builder
+      #   .npm_init
+      #   .add_file('.gitignore', template_file: 'web-project/.gitignore')
+      #   .vscode
       #   package_builder
       #     .npm_init
       #     .set('description', 'Transpiler SWC using Webpack 5')
