@@ -1,0 +1,33 @@
+{{> requirePath}}
+{{> requireWebpack}}
+
+{{#*inline "requirePath"}}
+{{#if root_scope.require_path}}
+const path = require("path");
+{{/if}}
+{{/inline}}
+{{#*inline "requireWebpack"}}
+{{#if root_scope.require_webpack}}
+const webpack = require('webpack');
+{{/if}}
+{{/inline}}
+{{#*inline "requireXXX"}}
+{{#if root_scope.require_xxx}}
+xxx
+{{/if}}
+{{/inline}}
+{{#*inline "requireXXX"}}
+{{#if root_scope.require_xxx}}
+xxx
+{{/if}}
+{{/inline}}
+{{#*inline "requireXXX"}}
+{{#if root_scope.require_xxx}}
+xxx
+{{/if}}
+{{/inline}}
+{{#*inline "requireXXX"}}
+{{#if root_scope.require_xxx}}
+xxx
+{{/if}}
+{{/inline}}

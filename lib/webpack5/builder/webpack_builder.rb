@@ -8,9 +8,11 @@ module Webpack5
       # attr_writer :webpack_config
       attr_writer :webpack_rc
 
-      # def initialize(context)
-      #   super(context)
-      # end
+      def initialize(context)
+        super(context)
+
+        @factory = Webpack5::Builder::WebpackJsonFactory
+      end
 
       # -----------------------------------
       # Builder Attributes
@@ -46,8 +48,10 @@ module Webpack5
       # -----------------------------------
 
       def webpack_init
-        unless File.exist?(webpack_rc_file)
-          @webpack_rc = {}
+        if File.exist?(webpack_rc_file)
+          load_webpack_rc
+        else
+          @webpack_rc = @factory.webpack
           write_webpack_rc
         end
 
@@ -92,13 +96,13 @@ module Webpack5
         raise Webpack5::Builder::Error, '.webpack-rc.json does not exist' unless File.exist?(webpack_rc_file)
 
         content = File.read(webpack_rc_file)
-        @webpack_rc = JSON.parse(content)
+        @webpack_rc = JSON.parse(content, object_class: Webpack5::Builder::JsonData)
 
         self
       end
 
       def write_webpack_rc
-        content = JSON.pretty_generate(@webpack_rc)
+        content = JSON.pretty_generate(@webpack_rc.as_json)
 
         FileUtils.mkdir_p(File.dirname(webpack_rc_file))
 

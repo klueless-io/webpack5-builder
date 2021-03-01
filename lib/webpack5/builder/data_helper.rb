@@ -16,7 +16,7 @@ module Webpack5
     class DataHelper
       # Convert a hash into a deep OpenStruct or array an array
       # of objects into an array of OpenStruct
-      def self.to_struct(data)
+      def to_struct(data)
         case data
         when Hash
           OpenStruct.new(data.transform_values { |v| to_struct(v) })
@@ -31,7 +31,7 @@ module Webpack5
       end
 
       # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity
-      def self.struct_to_hash(data)
+      def struct_to_hash(data)
         # No test yet
         if data.is_a?(Array)
           return data.map { |v| v.is_a?(OpenStruct) ? struct_to_hash(v) : v }
@@ -52,7 +52,7 @@ module Webpack5
       end
       # rubocop:enable Metrics/AbcSize, Metrics/CyclomaticComplexity
 
-      def self.clean_symbol(value)
+      def clean_symbol(value)
         return value if value.nil?
 
         value.is_a?(Symbol) ? value.to_s : value
