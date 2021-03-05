@@ -1,6 +1,12 @@
 {{> requirePath}}
 {{> requireWebpack}}
 
+{{#if (or dev_server)}}
+module.exports = {
+  devServer: {{as_javascript dev_server}}
+}
+{{/if}}
+
 {{#*inline "requirePath"}}
 {{#if root_scope.require_path}}
 const path = require("path");

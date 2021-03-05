@@ -14,7 +14,8 @@ RSpec.describe Webpack5::Builder::WebpackBuilder do
   let(:subfolder) { '01-simple-init' }
   let(:config) { Webpack5::Builder.configuration }
   let(:context) { Webpack5::Builder::Context.new(config) }
-  let(:builder) { described_class.new(context) }
+  let(:instance) { described_class.new(context) }
+  let(:builder) { instance }
   let(:cfg) do
     lambda { |config|
       config.target_folder = folder
@@ -98,7 +99,41 @@ RSpec.describe Webpack5::Builder::WebpackBuilder do
 
       it { is_expected.to eq(false) }
     end
-    fit { puts JSON.pretty_generate(builder.webpack_rc.as_json) }
+    # it { puts JSON.pretty_generate(builder.webpack_rc.as_json) }
+  end
+
+  describe '#transform_content' do
+    let(:builder) { instance.webpack_init }
+    let(:subject) { builder.transform_content(template_file: 'webpack.config.js.txt', **builder.webpack_rc.as_json).strip }
+
+    describe '.webpack_dev_server (opinionated)' do
+      it { is_expected.to be_empty }
+    end
+
+    describe '.webpack_dev_server' do
+      context 'opinionated config' do
+        before { builder.webpack_dev_server }
+
+        it { is_expected.to include('devServer').and include('open: true') }
+      end
+      context 'options config' do
+        before { builder.webpack_dev_server(static: %w[assets css]) }
+
+        it { is_expected.to include('devServer').and include('static').and include('assets') }
+        it { is_expected.not_to include('open: true') }
+      end
+      context 'block config' do
+        before do
+          builder.webpack_dev_server do |dev_server|
+            dev_server.xyz = 'hello'
+          end
+        end
+
+        # fit { puts subject }
+        it { is_expected.to include('devServer').and include('xyz').and include('hello') }
+        it { is_expected.not_to include('open: true') }
+      end
+    end
   end
 
   # fit {

@@ -47,13 +47,33 @@ module Webpack5
       # Fluent Builder Methods
       # -----------------------------------
 
-      def webpack_init
+      # Webpack init will create (and load) .webconfig-rc.json
+      #
+      # @param [bool] reinitialize Do you want to clear out any existing configuration, defaults to false
+      def webpack_init(reinitialize: false)
+        File.delete(webpack_rc_file) if reinitialize && File.exist?(webpack_rc_file)
+
         if File.exist?(webpack_rc_file)
           load_webpack_rc
         else
           @webpack_rc = @factory.webpack
           write_webpack_rc
         end
+
+        self
+      end
+
+      def webpack_dev_server(**dev_server_opts, &block)
+        if @webpack_rc.dev_server.nil?
+          if block
+            dev_server = @factory.dev_server(&block)
+          else
+            dev_server_opts = { opinion: @factory.opinion_dev_server } if dev_server_opts.empty?
+            dev_server = @factory.dev_server(**dev_server_opts)
+          end
+          @webpack_rc.dev_server = dev_server
+        end
+        write_webpack_rc
 
         self
       end

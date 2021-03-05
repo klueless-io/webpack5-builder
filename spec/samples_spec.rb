@@ -24,15 +24,38 @@ RSpec.describe 'Samples' do
       }
     end
 
-    context 'default entry' do
-      let(:subfolder) { '01-a-default-entry' }
+    context 'webpack_init only' do
+      let(:subfolder) { '01-a-empty-config' }
 
-      it {
-        # webpack_builder
-        #   .webpack_init
-        #   .add_file('webpack.config.js', template_file: 'webpack.config.js.txt', **webpack_builder.webpack_rc.as_json)
+      before do
+        webpack_builder
+          .webpack_init(true)
+          .add_file('webpack.config.js',
+                    template_file: 'webpack.config.js.txt', **webpack_builder.webpack_rc.as_json,
+                    pretty: true)
         # .vscode
-      }
+      end
+
+      # need expectation that the files are (json) default and config.js (blank)
+      # fit {}
+    end
+
+    context 'default entry' do
+      let(:subfolder) { '02-a-devserver' }
+
+      before do
+        webpack_builder
+          .webpack_init
+          .webpack_dev_server
+          .add_file('webpack.config.js',
+                    template_file: 'webpack.config.js.txt',
+                    pretty: true,
+                    **webpack_builder.webpack_rc.as_json)
+        # .vscode
+      end
+
+      # need expectation that the files are (json) default and config.js (blank)
+      # fit {}
     end
 
     # Samples need to use rspec-usage
