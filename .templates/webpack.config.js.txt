@@ -1,9 +1,18 @@
 {{> requirePath}}
 {{> requireWebpack}}
+{{> requireMiniCssExtractPlugin}}
 
-{{#if (or dev_server)}}
+{{#if (or mode entry entries dev_server plugins)~}}
 module.exports = {
-  devServer: {{as_javascript dev_server}}
+  {{#if mode}}{{as_javascript mode 'exclude_root'}},{{/if~}}
+  {{#if entry}}{{as_javascript entry 'exclude_root'}},{{/if~}}
+  {{#if entries}}entry: {{as_javascript entries}},{{/if~}}
+  {{#if dev_server}}devServer: {{as_javascript dev_server}},{{/if~}}
+  {{#if (or plugins.mini_css_extract)~}}
+  plugins: [
+  {{#if plugins.mini_css_extract}}new MiniCssExtractPlugin({ filename:'{{plugins.mini_css_extract.filename}}' }),{{/if}}
+  ],
+  {{/if}}
 }
 {{/if}}
 
@@ -17,23 +26,15 @@ const path = require("path");
 const webpack = require('webpack');
 {{/if}}
 {{/inline}}
-{{#*inline "requireXXX"}}
-{{#if root_scope.require_xxx}}
-xxx
-{{/if}}
-{{/inline}}
-{{#*inline "requireXXX"}}
-{{#if root_scope.require_xxx}}
-xxx
-{{/if}}
-{{/inline}}
-{{#*inline "requireXXX"}}
-{{#if root_scope.require_xxx}}
-xxx
-{{/if}}
-{{/inline}}
-{{#*inline "requireXXX"}}
-{{#if root_scope.require_xxx}}
-xxx
+{{#*inline "requireMiniCssExtractPlugin"}}
+{{#if root_scope.require_mini_css_extract_plugin}}
+/*
+ * MiniCssExtractPlugin enabled. This allows your app to use css modules that will be
+ # moved into a separate CSS file instead of inside one of your module entries!
+ *
+ * https://github.com/webpack-contrib/mini-css-extract-plugin
+ */
+
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 {{/if}}
 {{/inline}}

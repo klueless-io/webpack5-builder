@@ -5,6 +5,33 @@
 #          but I am sticking with this pattern for now as it saves
 #          me a lot of time in writing tests.
 # Future:  May want to remove this Anti Pattern
+#
+# These are the options that the current webpack-cli use
+#
+# webpack-cli options:
+#
+# - Will your application have multiple bundles? No
+# - [done] Which will be your application entry point? src/index
+# or
+# - Will your application have multiple bundles? Yes
+# - What do you want to name your bundles? (separated by comma) page1,pageTwo,pageThree
+# - [done] What is the location of "page1"? src/page1
+# - [done] What is the location of "pageTwo"? src/pageTwo
+# - [done] What is the location of "pageThree"? src/PageThree/page3
+#
+# - In which folder do you want to store your generated bundles? dist
+# - Will you use one of the below JS solutions? [No, ES6, Typescript]
+# - Will you use one of the below CSS solutions? [No, CSS, SASS, PostCss]
+# - Will you bundle your CSS files with MiniCssExtractPlugin? Yes
+# - What will you name the CSS bundle? main
+# - [done] Do you want to use webpack-dev-server? Yes
+# - Do you want to simplify the creation of HTML files for your bundle? Yes
+# - Do you want to add PWA support? Yes
+#
+# fit {
+#   puts JSON.pretty_generate( builder.webpack_rc.as_json)
+#   puts subject
+# }
 RSpec.describe Webpack5::Builder::WebpackBuilder do
   include_context :use_temp_folder
 
@@ -64,7 +91,6 @@ RSpec.describe Webpack5::Builder::WebpackBuilder do
   describe '.output_path' do
     subject { builder.output_path }
     it { is_expected.not_to be_empty }
-    it { puts subject }
   end
 
   # describe '.webpack_config_file' do
@@ -106,8 +132,89 @@ RSpec.describe Webpack5::Builder::WebpackBuilder do
     let(:builder) { instance.webpack_init }
     let(:subject) { builder.transform_content(template_file: 'webpack.config.js.txt', **builder.webpack_rc.as_json).strip }
 
-    describe '.webpack_dev_server (opinionated)' do
-      it { is_expected.to be_empty }
+    it { is_expected.to be_empty }
+
+    describe '.mode' do
+      it { is_expected.not_to include('mode:') }
+
+      context 'opinionated config' do
+        before { builder.mode }
+
+        it { is_expected.to include('mode:').and include('development') }
+      end
+      context 'options config' do
+        before { builder.mode(mode: 'production') }
+
+        it { is_expected.to include('mode:').and include('production') }
+      end
+      context 'block config' do
+        before do
+          builder.mode do |o|
+            o.mode = 'production'
+          end
+        end
+
+        it { is_expected.to include('mode:').and include('production') }
+      end
+    end
+
+    describe '.entry' do
+      context 'opinionated config' do
+        before { builder.entry }
+
+        it { is_expected.to include('entry:').and include('./src') }
+      end
+      context 'options config' do
+        before { builder.entry(entry: './src/index.js') }
+
+        it { is_expected.to include('entry:').and include('./src/index.js') }
+      end
+      context 'block config' do
+        before do
+          builder.entry do |o|
+            o.entry = './src/main.js'
+          end
+        end
+
+        it { is_expected.to include('entry:').and include('./src/main.js') }
+      end
+    end
+
+    describe '.entries' do
+      context 'opinionated config' do
+        before { builder.entries }
+
+        it do
+          is_expected
+            .to  include('entry:')
+            .and include('home')
+            .and include('./src/home.js')
+            .and include('about')
+            .and include('./src/about.js')
+        end
+      end
+      context 'options config' do
+        # Not Applicable
+      end
+      context 'block config' do
+        before do
+          builder.entries do |o|
+            o.entries = {
+              home: './src/main.js',
+              about: './src/about.js'
+            }
+          end
+        end
+
+        it do
+          is_expected
+            .to  include('entry:')
+            .and include('home')
+            .and include('./src/main.js')
+            .and include('about')
+            .and include('./src/about.js')
+        end
+      end
     end
 
     describe '.webpack_dev_server' do
@@ -119,8 +226,8 @@ RSpec.describe Webpack5::Builder::WebpackBuilder do
       context 'options config' do
         before { builder.webpack_dev_server(static: %w[assets css]) }
 
-        it { is_expected.to include('devServer').and include('static').and include('assets') }
         it { is_expected.not_to include('open: true') }
+        it { is_expected.to include('devServer').and include('static').and include('assets') }
       end
       context 'block config' do
         before do
@@ -129,16 +236,49 @@ RSpec.describe Webpack5::Builder::WebpackBuilder do
           end
         end
 
-        # fit { puts subject }
-        it { is_expected.to include('devServer').and include('xyz').and include('hello') }
         it { is_expected.not_to include('open: true') }
+        it { is_expected.to include('devServer').and include('xyz').and include('hello') }
+      end
+    end
+
+    describe '.plugin_mini_css_extract' do
+      it { is_expected.not_to include('mini-css-extract-plugin') }
+      # const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+
+      context 'opinionated config' do
+        before { builder.plugin_mini_css_extract }
+
+        it do
+          is_expected
+            .to  include("require('mini-css-extract-plugin')")
+            .and include('new MiniCssExtractPlugin')
+            .and include('main.[contenthash].css')
+        end
+      end
+      context 'options config' do
+        before { builder.plugin_mini_css_extract(filename: 'crazydave.css') }
+
+        it do
+          is_expected
+            .to  include("require('mini-css-extract-plugin')")
+            .and include('new MiniCssExtractPlugin')
+            .and include('crazydave.css')
+        end
+      end
+      context 'block config' do
+        before do
+          builder.plugin_mini_css_extract do |o|
+            o.filename = 'xmen.[contenthash].css'
+          end
+        end
+
+        it do
+          is_expected
+            .to  include("require('mini-css-extract-plugin')")
+            .and include('new MiniCssExtractPlugin')
+            .and include('xmen.[contenthash].css')
+        end
       end
     end
   end
-
-  # fit {
-  #   subject
-  #   builder.vscode
-  #   sleep(1)
-  # }
 end
