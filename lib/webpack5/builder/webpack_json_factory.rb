@@ -12,26 +12,29 @@ module Webpack5
         # ToDo, build up the WebStruct by applying each JSON structure
       end
 
+      # rubocop:disable Metrics/ParameterLists
       def self.webpack(
         settings: WebpackJsonFactory.settings,
         root_scope: WebpackJsonFactory.root_scope,
-        entries: [],
+        entry: nil,
+        entries: nil,
+        plugins: nil,
         dev_server: nil
       )
         obj = Webpack5::Builder::JsonData.new
 
-        obj.root_scope = root_scope
-        obj.entries = entries
-        obj.dev_server = dev_server unless dev_server.nil?
-        obj.settings = settings
-        # sample
-        # obj.name = name
-        # obj.email = email unless email.nil? # dynamic inclusion
+        obj.root_scope  = root_scope
+        obj.entry       = entry unless entry.nil?
+        obj.entries     = entries unless entries.nil?
+        obj.dev_server  = dev_server unless dev_server.nil?
+        obj.plugins     = plugins unless plugins.nil?
+        obj.settings    = settings
 
         yield obj if block_given?
 
         obj
       end
+      # rubocop:enable Metrics/ParameterLists
 
       def self.root_scope
         obj = Webpack5::Builder::JsonData.new
@@ -49,12 +52,60 @@ module Webpack5
         obj
       end
 
-      # https://webpack.js.org/concepts/entry-points/
-      def self.entry(name, path: nil)
+      def self.opinion_mode
+        lambda { |json|
+          json.mode = 'development'
+        }
+      end
+
+      # https://webpack.js.org/configuration/mode/
+      def self.mode(opinion: nil, **opts)
         obj = Webpack5::Builder::JsonData.new
 
-        obj.name = name
-        obj.path = path unless path.nil?
+        # Let the software lead/architect's opinion decide default configuration
+        opinion&.call(obj)
+
+        obj.mode = opts[:mode] unless opts[:mode].nil?
+
+        yield obj if block_given?
+
+        obj
+      end
+
+      def self.opinion_entry
+        lambda { |json|
+          json.entry = './src'
+        }
+      end
+
+      # https://webpack.js.org/concepts/entry-points/
+      def self.entry(opinion: nil, **opts)
+        obj = Webpack5::Builder::JsonData.new
+
+        # Let the software lead/architect's opinion decide default configuration
+        opinion&.call(obj)
+
+        # https://webpack.js.org/configuration/
+        obj.entry = opts[:entry] unless opts[:entry].nil?
+
+        yield obj if block_given?
+
+        obj
+      end
+
+      def self.opinion_entries
+        lambda { |json|
+          json.home = './src/home.js'
+          json.about = './src/about.js'
+        }
+      end
+
+      # https://webpack.js.org/concepts/entry-points/
+      def self.entries(opinion: nil)
+        obj = Webpack5::Builder::JsonData.new
+
+        # Let the software lead/architect's opinion decide default configuration
+        opinion&.call(obj)
 
         yield obj if block_given?
 
@@ -86,7 +137,7 @@ module Webpack5
       def self.dev_server(opinion: nil, **opts)
         obj = Webpack5::Builder::JsonData.new
 
-        # Let the software lead/architect's opinion decide default configure
+        # Let the software lead/architect's opinion decide default configuration
         opinion&.call(obj)
 
         # https://github.com/webpack/webpack-dev-server/tree/master/examples/cli/public
@@ -119,6 +170,26 @@ module Webpack5
         obj
       end
       # rubocop:enable Metrics/AbcSize
+
+      def self.opinion_mini_css_extract
+        lambda { |json|
+          json.filename = 'main.[contenthash].css'
+        }
+      end
+
+      # https://webpack.js.org/plugins/mini-css-extract-plugin/
+      def self.mini_css_extract(opinion: nil, **opts)
+        obj = Webpack5::Builder::JsonData.new
+
+        # Let the software lead/architect's opinion decide default configuration
+        opinion&.call(obj)
+
+        obj.filename = opts[:filename] unless opts[:filename].nil?
+
+        yield obj if block_given?
+
+        obj
+      end
     end
   end
 end

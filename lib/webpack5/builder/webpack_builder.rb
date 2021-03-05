@@ -47,36 +47,93 @@ module Webpack5
       # Fluent Builder Methods
       # -----------------------------------
 
-      # Webpack init will create (and load) .webconfig-rc.json
-      #
-      # @param [bool] reinitialize Do you want to clear out any existing configuration, defaults to false
-      def webpack_init(reinitialize: false)
-        File.delete(webpack_rc_file) if reinitialize && File.exist?(webpack_rc_file)
+      # Webpack init will create .webconfig-rc.json
+      def webpack_init
+        File.delete(webpack_rc_file) if File.exist?(webpack_rc_file)
 
-        if File.exist?(webpack_rc_file)
-          load_webpack_rc
-        else
-          @webpack_rc = @factory.webpack
-          write_webpack_rc
-        end
+        @webpack_rc = @factory.webpack
+        write_webpack_rc
 
         self
       end
 
       def webpack_dev_server(**dev_server_opts, &block)
         if @webpack_rc.dev_server.nil?
-          if block
-            dev_server = @factory.dev_server(&block)
-          else
-            dev_server_opts = { opinion: @factory.opinion_dev_server } if dev_server_opts.empty?
-            dev_server = @factory.dev_server(**dev_server_opts)
-          end
-          @webpack_rc.dev_server = dev_server
+          @webpack_rc.dev_server = if block
+                                     @factory.dev_server(&block)
+                                   else
+                                     dev_server_opts = { opinion: @factory.opinion_dev_server } if dev_server_opts.empty?
+                                     @factory.dev_server(**dev_server_opts)
+                                   end
         end
         write_webpack_rc
 
         self
       end
+
+      def mode(**mode_opts, &block)
+        if @webpack_rc.mode.nil?
+          @webpack_rc.mode = if block
+                               @factory.mode(&block)
+                             else
+                               mode_opts = { opinion: @factory.opinion_mode } if mode_opts.empty?
+                               @factory.mode(**mode_opts)
+                             end
+        end
+        write_webpack_rc
+
+        self
+      end
+
+      def entry(**entry_opts, &block)
+        if @webpack_rc.entry.nil?
+          @webpack_rc.entry = if block
+                                @factory.entry(&block)
+                              else
+                                entry_opts = { opinion: @factory.opinion_entry } if entry_opts.empty?
+                                @factory.entry(**entry_opts)
+                              end
+        end
+        write_webpack_rc
+
+        self
+      end
+
+      def entries(&block)
+        if @webpack_rc.entries.nil?
+          @webpack_rc.entries = if block
+                                  @factory.entries(&block)
+                                else
+                                  entries_opts = { opinion: @factory.opinion_entries }
+                                  @factory.entries(**entries_opts)
+                                end
+        end
+        write_webpack_rc
+
+        self
+      end
+
+      # Plugins
+
+      def plugin_mini_css_extract(**mini_css_extract_opts, &block)
+        ensure_plugins
+        # @webpack_rc.plugins = OpenStruct.new if @webpack_rc.plugins.nil?
+
+        if @webpack_rc.plugins.mini_css_extract.nil?
+          @webpack_rc.plugins.mini_css_extract = if block
+                                                   @factory.mini_css_extract(&block)
+                                                 else
+                                                   mini_css_extract_opts = { opinion: @factory.opinion_mini_css_extract } if mini_css_extract_opts.empty?
+                                                   @factory.mini_css_extract(**mini_css_extract_opts)
+                                                 end
+
+          @webpack_rc.root_scope.require_mini_css_extract_plugin = true
+        end
+        write_webpack_rc
+
+        self
+      end
+      alias plugin_split_css plugin_mini_css_extract
 
       # # Set a property value in the webpack_config
       # def set(key, value)
@@ -129,6 +186,10 @@ module Webpack5
         File.write(webpack_rc_file, content)
 
         self
+      end
+
+      def ensure_plugins
+        @webpack_rc.plugins = OpenStruct.new if @webpack_rc.plugins.nil?
       end
     end
   end
