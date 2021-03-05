@@ -6,6 +6,8 @@ RSpec.describe Webpack5::Builder::WebpackJsonFactory do
   end
   let(:webpack2) do
     described_class.webpack
+    # do
+    # end
   end
 
   let(:root_scope1) do
@@ -25,6 +27,16 @@ RSpec.describe Webpack5::Builder::WebpackJsonFactory do
       root.require_webpack = true
     end
   end
+  let(:dev_server1) do
+    described_class.dev_server
+  end
+  let(:dev_server2) do
+    # Default when dev server is requested
+    described_class.dev_server do |server|
+      server.open = true
+      server.host = 'localhost'
+    end
+  end
 
   def p(title, _hash)
     puts 70 * '-'
@@ -32,8 +44,9 @@ RSpec.describe Webpack5::Builder::WebpackJsonFactory do
     puts 70 * '-'
   end
 
-  fit { puts JSON.pretty_generate(webpack1.as_json) }
-  fit { puts JSON.pretty_generate(root_scope1.as_json) }
+  # fit { puts JSON.pretty_generate(webpack1.as_json) }
+  # fit { puts JSON.pretty_generate(dev_server.as_json) }
+  # fit { puts JSON.pretty_generate(root_scope1.as_json) }
   # fit { puts JSON.pretty_generate(webpack1.as_json) }
 
   describe '#root_scope' do
@@ -44,7 +57,7 @@ RSpec.describe Webpack5::Builder::WebpackJsonFactory do
 
       it {
         expect(subject).to have_attributes(
-          require_path: true,
+          require_path: false,
           require_webpack: false,
           require_mini_css_extract_plugin: false,
           require_html_webpack_plugin: false,
@@ -60,7 +73,7 @@ RSpec.describe Webpack5::Builder::WebpackJsonFactory do
 
       it {
         expect(subject).to have_attributes(
-          require_path: true,
+          require_path: false,
           require_webpack: true,
           require_mini_css_extract_plugin: false,
           require_html_webpack_plugin: false,
