@@ -42,6 +42,8 @@ module Webpack5
 
         File.write(file, content)
 
+        run_prettier file if opts.key?(:pretty)
+
         self
       end
 
@@ -85,6 +87,11 @@ module Webpack5
         return "Content not found: #{File.expand_path(cf)}" unless File.exist?(cf)
 
         File.read(cf)
+      end
+
+      def run_prettier(file)
+        command = "prettier --check #{file} --write #{file}"
+        run_command command
       end
 
       def run_command(command)
