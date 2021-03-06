@@ -241,37 +241,25 @@ RSpec.describe 'Samples' do
         #   .webpack_init
         #   .vscode
 
-        # webpack_builder
-        #   .webpack_init
+        webpack_builder
+          .webpack_init
+          .mode
+          .webpack_dev_server
+          .entries
+          .plugin_mini_css_extract
+          .plugin_mini_css_extract do |o|
+            o.filename = 'xmen.[contenthash].css'
+          end
 
-        # webpack_builder.add_file('webpack.config.js',
-        #   pretty: true,
-        #   template_file: 'webpack.config.js.txt',
-        #   **webpack_builder.webpack_rc.as_json)
-
-        # .mode
-        # .webpack_dev_server
-        # .plugin_mini_css_extract
-        # .entry
-        # .entries
-        # .entries do |o|
-        #   o.entries = {
-        #     home: './src/main.js',
-        #     about: './src/about.js',
-        #     contact: './src/contact.js'
-        #   }
-        # end
-        # .plugin_mini_css_extract do |o|
-        #   o.filename = 'xmen.[contenthash].css'
-        # end
+        webpack_builder.add_file('webpack.config.js',
+                                 pretty: true,
+                                 template_file: 'webpack.config.js.txt',
+                                 **webpack_builder.webpack_rc.as_json)
       end
 
       # .plugin_mini_css_extract
       # .entries
 
-      # .entry do |o|
-      #   o.entry = './src/main.js'
-      # end
       # .entries
       # .entries do |o|
       #   o.entries = {
@@ -279,9 +267,6 @@ RSpec.describe 'Samples' do
       #     about: './src/about.js',
       #     contact: './src/contact.js'
       #   }
-      # end
-      # .plugin_mini_css_extract do |o|
-      #   o.filename = 'xmen.[contenthash].css'
       # end
 
       # it {}
@@ -312,17 +297,20 @@ RSpec.describe 'Samples' do
         .add_script('run', 'node dist/index.js')
         .add_file('.gitignore', template_file: 'web-project/.gitignore')
         .add_file('src/index.js', content: <<~JAVASCRIPT
-                    // test nullish coalescing - return right side when left side null or undefined
-                    const x = null ?? "default string";
-                    console.assert(x === "default string");
-          #{'      '}
-                    const y = 0 ?? 42;
-                    console.assert(y === 0);
+          // test nullish coalescing - return right side when left side null or undefined
+          const x = null ?? "default string";
+          console.assert(x === "default string");
+
+          console.log('x will be: ', x);
+          const y = 0 ?? 42;
+          console.assert(y === 0);
+
+          console.log('y will be: ', y);
         JAVASCRIPT
         )
         .development
         .npm_install_group('swc')
-      # .npm_add_group('swc')
+        .npm_install('bs')
     end
 
     # it {}
