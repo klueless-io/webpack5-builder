@@ -22,4 +22,5 @@ group :development, :test do
   gem 'rubocop'
   gem 'rubocop-rake', require: false
   gem 'rubocop-rspec', require: false
+  gem 'filewatcher', require: false
 end

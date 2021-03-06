@@ -117,7 +117,6 @@ module Webpack5
 
       def plugin_mini_css_extract(**mini_css_extract_opts, &block)
         ensure_plugins
-        # @webpack_rc.plugins = OpenStruct.new if @webpack_rc.plugins.nil?
 
         if @webpack_rc.plugins.mini_css_extract.nil?
           @webpack_rc.plugins.mini_css_extract = if block
@@ -129,6 +128,7 @@ module Webpack5
 
           @webpack_rc.root_scope.require_mini_css_extract_plugin = true
         end
+
         write_webpack_rc
 
         self
