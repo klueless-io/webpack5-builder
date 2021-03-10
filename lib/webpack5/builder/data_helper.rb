@@ -13,6 +13,8 @@ module Webpack5
     end
 
     # Helper methods attached to the namespace for working with Data
+    #
+    # Usage: Webpack5::Builder.data.to_struct(data)
     class DataHelper
       # Convert a hash into a deep OpenStruct or array an array
       # of objects into an array of OpenStruct
