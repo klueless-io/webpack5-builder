@@ -42,6 +42,21 @@ module Webpack5
         set_package_group('babel', 'Babel Transpiler', %w[@babel/core @babel/cli @babel/preset-env babel-loader])
         set_package_group('typescript', 'Typescript', %w[typescript ts-loader])
       end
+
+      def debug
+        puts '-' * 120
+        puts 'webpack5 configuration'
+        kv 'target_folder'    , target_folder
+        kv 'template_folder'  , template_folder
+        kv 'package_groups'   , package_groups
+      end
+
+      private
+
+      def kv(name, value)
+        puts "#{name.rjust(30)} : #{value.to_s}"
+      end
+
     end
 
     PackageGroup = Struct.new(:key, :description, :package_names)
