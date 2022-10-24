@@ -1,5 +1,24 @@
 # frozen_string_literal: true
 
+# Principals
+#
+# Single Responsibility Principle (SOLID)
+# High Cohesion (GRASP)
+# Low Coupling (GRASP)
+# Open Closed Principle (SOLID)
+# Liskov Substitution principle (SOLID)
+# Interface Segregation Principle (SOLID)
+# Dependency Inversion Principle (SOLID)
+# Program to an Interface, not to an Implementation
+# Hollywood Principle
+# Polymorphism (GRASP)
+# Information Expert (GRASP)
+# Creator (GRASP)
+# Pure Fabrication (GRASP)
+# Controller (GRASP)
+# Favor composition over inheritance
+# Indirection (GRASP)
+
 module Webpack5
   module Builder
     # Reads DDD markup that can be applied to instruction files.
@@ -29,42 +48,43 @@ module Webpack5
       # V2: {(?<command>[\w]*):(?<noun>[\w]*):(?<verb>[\w-]*)[^\}]*\}(?<description>[\s\S]|[^{]*){\/\k<command>}
 
       SAMPLE = <<~TEXT
-                ---
-                filter:
-                  show_actions: true
-                  show_queries: true
-                  show_actions: true
-                  show_predicates: true
-                  show_services: true
-                  domain_nouns: * # player, game, bank, property, card, square
-                ---
-                
-                {cmd:player:get-piece}
-                Each player chooses one token to represent him/her while traveling around the board.
-                {/cmd}
+        ---
+        filter:
+          show_actions: true
+          show_queries: true
+          show_actions: true
+          show_predicates: true
+          show_services: true
+          domain_nouns: * # player, game, bank, property, card, square
+        ---
+        
+        {cmd:player:get-piece}
+        Each player chooses one token to represent him/her while traveling around the board.
+        {/cmd}
 
-                ### Banker
+        ### Banker
 
-                The bank / auctioneer is controlled by the computer.
+        The bank / auctioneer is controlled by the computer.
 
-                Besides the Bank’s money, the {cmd:game:generate-title-deed}Bank holds the Title Deed cards and houses and hotels prior to purchase and use by the players.{/cmd}
+        Besides the Bank’s money, the {cmd:game:generate-title-deed}Bank holds the Title Deed cards and houses and hotels prior to purchase and use by the players.{/cmd}
 
-                {cmd:bank:pay-salary}
-                The Bank pays salaries and bonuses.
-                {/cmd}
+        {cmd:bank:pay-salary}
+        The Bank pays salaries and bonuses.
+        {/cmd}
 
-                {svc:bank:hold-an-auction}The bank sells and auctions properties{/svc} and {svc:bank:assign-title-deed}hands out their proper Title Deed cards{/svc}
+        {svc:bank:hold-an-auction}The bank sells and auctions properties{/svc} and {svc:bank:assign-title-deed}hands out their proper Title Deed cards{/svc}
       TEXT
 
-      DDD_MARKUP = /
+      DDD_MARKUP = %r{
       {
         (?<command>[\w|-]*):
         (?<noun>[\w|-]*):
         (?<verb>[\w|-]*)
-      [^\}]*\}
+        (?<options-colon>:(?<options>[\w|-]*))?
+      [^}]*\}
           (?<description>[\s\S]|[^{]*)
-      {\/\k<command>}
-      /x
+      {/\k<command>}
+      }x
 
       def load_file(file)
         parsed = FrontMatterParser::Parser.parse_file(file)
@@ -80,12 +100,13 @@ module Webpack5
         #  command: "action"
         #  noun   : "banker"
         #  verb   : "revoke-admin"
+        #  options: "some-option-here"
         #  content: "the banker can revoke admin privilege from a player">
 
         @debug = true
         @markup = content
-          .to_enum(:scan, DDD_MARKUP)
-          .map do
+                  .to_enum(:scan, DDD_MARKUP)
+                  .map do
             item = OpenStruct.new(Regexp.last_match.named_captures)
             item.command = item.command.to_sym
             item.full_command = "#{item.command}:#{item.noun}:#{item.verb}"
@@ -93,7 +114,7 @@ module Webpack5
 
             split_on_verb(item)
           end
-          .flatten
+                  .flatten
 
         @markup.each do |item|
           set_artifact_name(item)
@@ -105,7 +126,18 @@ module Webpack5
       end
 
       def parse_to_markdown(target_file)
-        output = content.gsub(DDD_MARKUP) { |_| match = Regexp.last_match; match[4] }
+        output = content.gsub(DDD_MARKUP) do |_|
+          values = Regexp.last_match.named_captures
+          
+          if values['options'].nil?
+            values['description']
+          elsif values['options'].include?('-md-remove')
+            # remove description from the output markdown
+            nil
+            else
+              values['description']
+          end
+        end
 
         File.write(target_file, output)
 
@@ -114,10 +146,10 @@ module Webpack5
 
       def group
         @markup = @markup
-          .group_by do |item|
+                  .group_by do |item|
             [item[:command], item[:noun], item[:verb]]
           end
-          .map do |g|
+                  .map do |g|
             # g is an array with the sample [key, rows]
             rows = g[1]
             item = rows.first
@@ -126,13 +158,13 @@ module Webpack5
             # Put 1 (or more) item.description in an array,
             # the items can have an order if applied so that they are
             # listed how you want instead of the natural order
-            if rows.count == 1
-              item.descriptions = [item.description]
+            item.descriptions = if rows.count == 1
+              [item.description]
             else
-              item.descriptions = rows.map { |i| i.description }.reject(&:empty?)
-            end
+              rows.map { |i| i.description }.reject(&:empty?)
+                                end
 
-            item.word_wrap_descriptions = item.descriptions.flat_map{ |description| word_wrap(description, 80) }
+            item.word_wrap_descriptions = item.descriptions.flat_map { |description| word_wrap(description, 80) }
 
             # Overwrite the original description with the combined ordered descriptions
             item.description = rows.map { |i| i.description }.join("\n\n")
@@ -152,10 +184,10 @@ module Webpack5
 
         @filtered_markup = markup.reject do |item|
           exclude_action_predicate(item) ||
-          exclude_query_predicate(item) ||
-          exclude_predicate_predicate(item) ||
-          exclude_interface_predicate(item) ||
-          exclude_service_predicate(item)
+            exclude_query_predicate(item) ||
+            exclude_predicate_predicate(item) ||
+            exclude_interface_predicate(item) ||
+            exclude_service_predicate(item)
         end
 
         if front_matter.filter.domain_nouns != 'all'
@@ -167,9 +199,9 @@ module Webpack5
           rex = Regexp.new(front_matter.filter.search)
           @filtered_markup = @filtered_markup.select do |item|
             item.command.match(rex) ||
-            item.noun.match(rex) ||
-            item.verb.match(rex) ||
-            item.description.match(rex)
+              item.noun.match(rex) ||
+              item.verb.match(rex) ||
+              item.description.match(rex)
           end
         end
 
@@ -202,26 +234,31 @@ module Webpack5
 
       def exclude_action_predicate(item)
         return true if item.command == :action && front_matter.filter.exclude_actions
+
         false
       end
 
       def exclude_query_predicate(item)
         return true if item.command == :query && front_matter.filter.exclude_queries
+
         false
       end
 
       def exclude_predicate_predicate(item)
         return true if item.command == :predicate && front_matter.filter.exclude_predicates
+
         false
       end
 
       def exclude_interface_predicate(item)
         return true if item.command == :interface && front_matter.filter.exclude_interfaces
+
         false
       end
 
       def exclude_service_predicate(item)
         return true if item.command == :service && front_matter.filter.exclude_services
+
         false
       end
 
@@ -236,20 +273,20 @@ module Webpack5
       end
 
       def set_artifact_name(item)
-        case item.command
+        item.artifact = case item.command
         when :action
-          item.artifact = "#{item.verb}-action"
+          "#{item.verb}-action"
         when :query
-          item.artifact = "#{item.verb}-query"
+          "#{item.verb}-query"
         when :predicate
-          item.artifact = "#{item.verb}"
+          "#{item.verb}"
         when :interface
-          item.artifact = "i-#{item.verb}"
+          "i-#{item.verb}"
         when :service
-          item.artifact = "#{item.verb}-service"
+          "#{item.verb}-service"
         else
-          item.artifact = item.verb
-        end
+          item.verb
+                        end
       end
 
       def print_artifacts
@@ -269,19 +306,19 @@ module Webpack5
         items.each do |item|
           values = columns.map do |column|
             value = item.send(column.name).to_s
-            value = value.strip.gsub("\n","<LF>") if column.name == :description
+            value = value.strip.gsub("\n", '<LF>') if column.name == :description
             rpad(value, column.width)
           end
 
           puts values.join(' | ')
-                    # puts "#{item.repeats > 1 ? item.repeats.to_s : ' '} | #{item.command.to_s.ljust(9)} | #{item.noun.ljust(8)} | #{item.verb.ljust(30)} | #{item.artifact.ljust(35)} | #{item.description.gsub("\n","<LF>")[0..50]}"
+          # puts "#{item.repeats > 1 ? item.repeats.to_s : ' '} | #{item.command.to_s.ljust(9)} | #{item.noun.ljust(8)} | #{item.verb.ljust(30)} | #{item.artifact.ljust(35)} | #{item.description.gsub("\n","<LF>")[0..50]}"
         end
 
         self
       end
 
       def rpad(value, width)
-        (value.length > width) ? value.slice(0..width) : value.ljust(width, ' ')
+        value.length > width ? value.slice(0..width) : value.ljust(width, ' ')
       end
 
       def print_configuration
@@ -289,21 +326,21 @@ module Webpack5
 
         puts ''
         puts "--[ Configuration / Front Matter ]#{'-' * 66}"
-        kv_config(0, "format_artifacts"  , front_matter.format_artifacts)
-        kv_config(0, "show_artifacts"    , front_matter.show_artifacts)
-        kv_config(0, "show_config"       , front_matter.show_config)
-        kv_config(0, "show_all_stats"    , front_matter.show_all_stats)
-        kv_config(0, "use_filter"        , front_matter.use_filter)
-        kv_config(0, "generate_rc"       , front_matter.generate_rc)
+        kv_config(0, 'format_artifacts'  , front_matter.format_artifacts)
+        kv_config(0, 'show_artifacts'    , front_matter.show_artifacts)
+        kv_config(0, 'show_config'       , front_matter.show_config)
+        kv_config(0, 'show_all_stats'    , front_matter.show_all_stats)
+        kv_config(0, 'use_filter'        , front_matter.use_filter)
+        kv_config(0, 'generate_rc'       , front_matter.generate_rc)
         
         puts 'filters:'
-        kv_config(2, "exclude_actions"   , front_matter.filter.exclude_actions)
-        kv_config(2, "exclude_queries"   , front_matter.filter.exclude_queries)
-        kv_config(2, "exclude_predicates", front_matter.filter.exclude_predicates)
-        kv_config(2, "exclude_interfaces", front_matter.filter.exclude_interfaces)
-        kv_config(2, "exclude_services"  , front_matter.filter.exclude_services)
-        kv_config(2, "domain_nouns"      , front_matter.filter.domain_nouns)
-        kv_config(2, "search"            , front_matter.filter.search)
+        kv_config(2, 'exclude_actions'   , front_matter.filter.exclude_actions)
+        kv_config(2, 'exclude_queries'   , front_matter.filter.exclude_queries)
+        kv_config(2, 'exclude_predicates', front_matter.filter.exclude_predicates)
+        kv_config(2, 'exclude_interfaces', front_matter.filter.exclude_interfaces)
+        kv_config(2, 'exclude_services'  , front_matter.filter.exclude_services)
+        kv_config(2, 'domain_nouns'      , front_matter.filter.domain_nouns)
+        kv_config(2, 'search'            , front_matter.filter.search)
 
         self
       end
@@ -328,16 +365,15 @@ module Webpack5
       end
 
       def print_stats(items)
-
         puts ''
-        kv_stat("count"       , count_count(items))
-        kv_stat("actions"     , actions_count(items))
-        kv_stat("queries"     , queries_count(items))
-        kv_stat("predicates"  , predicates_count(items))
-        kv_stat("interfaces"  , interfaces_count(items))
-        kv_stat("services"    , services_count(items))
+        kv_stat('count'       , count_count(items))
+        kv_stat('actions'     , actions_count(items))
+        kv_stat('queries'     , queries_count(items))
+        kv_stat('predicates'  , predicates_count(items))
+        kv_stat('interfaces'  , interfaces_count(items))
+        kv_stat('services'    , services_count(items))
         nouns = domain_nouns(items)
-        kv_stat("domain nouns", domain_nouns_count(items), nouns.empty? ? '' : " [#{nouns.join(', ')}]")
+        kv_stat('domain nouns', domain_nouns_count(items), nouns.empty? ? '' : " [#{nouns.join(', ')}]")
 
         self
       end
@@ -360,7 +396,7 @@ module Webpack5
               { bounded_context: { name: domain_name } },
               { aggregate_root: { name: domain_name } },
               { model: { name: 'sample_model' } },
-              { value_object: { name: 'sample_value' } },
+              { value_object: { name: 'sample_value' } }
             ],
             # command
             # noun
@@ -380,32 +416,39 @@ module Webpack5
       def count_count(items)
         items.count
       end
+
       def actions_count(items)
         items.select { |r| r.command == :action }.count
       end
+
       def queries_count(items)
         items.select { |r| r.command == :query }.count
       end
+
       def predicates_count(items)
         items.select { |r| r.command == :predicate }.count
       end
+
       def interfaces_count(items)
         items.select { |r| r.command == :interface }.count
       end
+
       def services_count(items)
         items.select { |r| r.command == :service   }.count
       end
+
       def domain_nouns_count(items)
         items.group_by(&:noun).count
       end
+
       def domain_nouns(items)
         items.group_by(&:noun).map { |r| r[0] }
       end
 
       def paged(items)
         if pagination.active
-          start = (pagination.page-1) * pagination.size
-          last = ((pagination.page) * pagination.size)-1
+          start = (pagination.page - 1) * pagination.size
+          last = (pagination.page * pagination.size) - 1
 
           items = items[start..last] || []
         end
@@ -424,27 +467,28 @@ module Webpack5
       def handle_bool(value, default_value)
         return default_value if value.nil? || (value.is_a?(String) && value.empty?)
         return false if value.is_a?(Integer) && value != 1
-        !!(value)
+
+        !!value
       end
 
       def front_matter_defaults(front_matter)
         front_matter = {} if front_matter.nil?
         front_matter['filter'] = {} if front_matter['filter'].nil?
 
-        front_matter['format_artifacts'   ] = ['repeats:1', 'command:9', 'noun:8', 'verb:30', 'artifact:35', 'description:120'] if front_matter['format_artifacts'].nil?
-        front_matter['show_artifacts'     ] = handle_bool(front_matter['show_artifacts'     ], true)
-        front_matter['show_config'        ] = handle_bool(front_matter['show_config'        ], true)
-        front_matter['show_all_stats'     ] = handle_bool(front_matter['show_all_stats'     ], true)
+        front_matter['format_artifacts'] = ['repeats:1', 'command:9', 'noun:8', 'verb:30', 'artifact:35', 'description:120'] if front_matter['format_artifacts'].nil?
+        front_matter['show_artifacts'] = handle_bool(front_matter['show_artifacts'], true)
+        front_matter['show_config'] = handle_bool(front_matter['show_config'], true)
+        front_matter['show_all_stats'] = handle_bool(front_matter['show_all_stats'], true)
         front_matter['show_filtered_stats'] = handle_bool(front_matter['show_filtered_stats'], true)
-        front_matter['use_filter'         ] = handle_bool(front_matter['use_filter'         ], false)
-        front_matter['generate_rc'        ] = handle_bool(front_matter['generate_rc'        ], true)
-        front_matter['pagination'         ] = [0, 1, 15] if front_matter['pagination'].nil?
+        front_matter['use_filter'] = handle_bool(front_matter['use_filter'], false)
+        front_matter['generate_rc'] = handle_bool(front_matter['generate_rc'], true)
+        front_matter['pagination'] = [0, 1, 15] if front_matter['pagination'].nil?
         
         front_matter['filter']['exclude_actions'   ] = handle_bool(front_matter['filter']['exclude_actions']   , false)
         front_matter['filter']['exclude_queries'   ] = handle_bool(front_matter['filter']['exclude_queries']   , false)
         front_matter['filter']['exclude_interfaces'] = handle_bool(front_matter['filter']['exclude_interfaces'], false)
         front_matter['filter']['exclude_predicates'] = handle_bool(front_matter['filter']['exclude_predicates'], false)
-        front_matter['filter']['exclude_services'  ] = handle_bool(front_matter['filter']['exclude_services'  ], false)
+        front_matter['filter']['exclude_services'  ] = handle_bool(front_matter['filter']['exclude_services'], false)
 
         front_matter['filter']['domain_nouns'      ] = 'all' if front_matter['filter']['domain_nouns'].nil?
         front_matter['filter']['search'            ] = ''    if front_matter['filter']['search'].nil?
@@ -465,17 +509,17 @@ module Webpack5
       def order_by_definitions
         return @order_by_definitions if defined? @order_by_definitions
 
-        if front_matter['order_by'].nil?
-          @order_by_definitions = []
+        @order_by_definitions = if front_matter['order_by'].nil?
+          []
         else
-          @order_by_definitions = front_matter['order_by'].map do |format|
+          front_matter['order_by'].map do |format|
             split = format.split(':')
 
             name = split[0].to_sym
             direction = split.length > 1 ? split[1].to_sym : :asc
             OpenStruct.new(name: name, direction: direction)
           end
-        end
+                                end
       end
 
       def pagination

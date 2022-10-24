@@ -16,7 +16,6 @@ module Webpack5
       # -----------------------------------
       # Builder Attributes
       # -----------------------------------
-
     end
   end
 end

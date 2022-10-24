@@ -16,7 +16,7 @@ module Webpack5
 
       def generate(opts)
         # Structure Shape
-        # 
+        #
         # {
         #   "settings": {
         #     "namespace": "p04_domain_monopoly_v1"
@@ -37,8 +37,8 @@ module Webpack5
           opts = {
             command_folder: get_command_folder(structure['command'])
           }
-          .merge(opts)
-          .merge(structure)
+                 .merge(opts)
+                 .merge(structure)
 
           template_file = File.join('structures', "#{structure['command']}.cs")
           # puts JSON.pretty_generate(opts.merge(structure))
@@ -49,7 +49,7 @@ module Webpack5
       def get_target_folder(structure)
         opts = structure.merge(command_folder: get_command_folder(structure['command']))
 
-        transform_content(template: "{{camel noun}}/{{camel command_folder}}", **opts)
+        transform_content(template: '{{camel noun}}/{{camel command_folder}}', **opts)
       end
 
       def get_target_file_name(structure)
@@ -58,20 +58,20 @@ module Webpack5
         # }.merge(structure)
 
         # "#{structure['noun']}_#{structure['verb']}.cs"
-        case structure['command']
-        when 'action'
-          template = '{{camel verb}}Action.cs'
-        when 'query'
-          template = '{{camel verb}}Query.cs'
-        when 'predicate'
-          template = '{{camel verb}}.cs'
-        when 'interface'
-          template = 'I{{camel verb}}.cs'
-        when 'service'
-          template = '{{camel verb}}Service.cs'
-        else
-          template = '{{camel name}}.cs'
-        end
+        template = case structure['command']
+                   when 'action'
+                     '{{camel verb}}Action.cs'
+                   when 'query'
+                     '{{camel verb}}Query.cs'
+                   when 'predicate'
+                     '{{camel verb}}.cs'
+                   when 'interface'
+                     'I{{camel verb}}.cs'
+                   when 'service'
+                     '{{camel verb}}Service.cs'
+                   else
+                     '{{camel name}}.cs'
+                   end
         transform_content(template: template, **structure)
       end
 
@@ -95,7 +95,6 @@ module Webpack5
         else
           ''
         end
-
       end
 
       def debug
@@ -105,7 +104,7 @@ module Webpack5
         # kv 'logical artifacts #'   , dddrc['artifacts']['logical'].length
         kv 'structural artifacts #', structural.length
       end
-      
+
       private
 
       def kv(name, value)

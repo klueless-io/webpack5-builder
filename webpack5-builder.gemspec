@@ -38,8 +38,8 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
   # spec.extensions    = ['ext/webpack5_builder/extconf.rb']
 
-  spec.add_dependency 'handlebars-helpers'
   spec.add_dependency 'front_matter_parser'
+  spec.add_dependency 'handlebars-helpers'
 
   # spec.add_dependency 'active_model_serializers'
 end

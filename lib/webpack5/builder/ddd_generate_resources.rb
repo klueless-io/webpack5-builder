@@ -52,7 +52,6 @@ module Webpack5
         else
           ''
         end
-
       end
 
       def debug
@@ -62,7 +61,7 @@ module Webpack5
         # kv 'logical artifacts #'   , dddrc['artifacts']['logical'].length
         kv 'structural artifacts #', structural.length
       end
-      
+
       private
 
       def kv(name, value)

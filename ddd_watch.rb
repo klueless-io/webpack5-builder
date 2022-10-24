@@ -34,14 +34,15 @@ def process_file(file)
   }
 
   # Needs a refactor
-  # generate_csharp_builders(dddrc, opts)
-  # generate_csharp_code(dddrc, opts)
+  generate_csharp_builders(dddrc, opts)
+  generate_csharp_code(dddrc, opts)
 
   puts ''
   puts "Watching: #{file}"
 end
 
-def generate_csharp_builders(dddrc, opts) #, code_folder)
+# , code_folder)
+def generate_csharp_builders(dddrc, opts)
   puts 'generate csharp builders'
 
   target_folder = '/Users/davidcruwys/dev/c#/P04DomainMonopolyV1/_/Builder'
@@ -57,7 +58,8 @@ def generate_csharp_code(dddrc, opts)
   generate(Webpack5::Builder::DddGenerateCsharp, dddrc, target_folder, opts)
 end
 
-def generate(generator, dddrc, target_folder, opts) #, code_folder)
+# , code_folder)
+def generate(generator, dddrc, target_folder, opts)
   context = configure_builder(target_folder)
 
   FileUtils.rm_rf(target_folder) if File.directory?(target_folder)
@@ -94,21 +96,16 @@ puts "Watch File: #{watch_file}"
 
 process_file(watch_file)
 
-Filewatcher.new(directory).watch() do |filename, event|
-  if(event == :updated) && filename.casecmp(watch_file).zero?
+Filewatcher.new(directory).watch do |filename, event|
+  if (event == :updated) && filename.casecmp(watch_file).zero?
     puts "\n" * 70
     $stdout.clear_screen
 
     process_file(watch_file)
   end
 
-  if(event == :delete)
-    puts "File deleted: " + filename
-  end
-  if(event == :new)
-    puts "Added file: " + filename
-  end
+  puts 'File deleted: ' + filename if event == :delete
+  puts 'Added file: ' + filename if event == :new
 end
 
 puts 'Ending......................'
-

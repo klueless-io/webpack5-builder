@@ -13,14 +13,14 @@ gemspec
 # end
 
 group :development, :test do
+  gem 'filewatcher', require: false
   gem 'guard-bundler'
   gem 'guard-rspec'
   gem 'guard-rubocop'
-  gem 'rake', '~> 12.0'
+  gem 'rake'
   gem 'rake-compiler', require: false
   gem 'rspec', '~> 3.0'
   gem 'rubocop'
   gem 'rubocop-rake', require: false
   gem 'rubocop-rspec', require: false
-  gem 'filewatcher', require: false
 end

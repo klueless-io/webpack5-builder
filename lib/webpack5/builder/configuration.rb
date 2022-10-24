@@ -54,9 +54,8 @@ module Webpack5
       private
 
       def kv(name, value)
-        puts "#{name.rjust(30)} : #{value.to_s}"
+        puts "#{name.rjust(30)} : #{value}"
       end
-
     end
 
     PackageGroup = Struct.new(:key, :description, :package_names)
